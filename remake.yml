@@ -1,0 +1,30 @@
+packages:
+    - dplyr
+    - rgdal
+    - maptools
+    - raster
+
+sources:
+    - remake_scripts
+
+targets:
+    all:
+        depends:
+        - iucn_raster
+        - pantheria_common
+
+
+    iucn_mammal_ranges:
+        command: readShapePoly("data/raw/iucn_terr_mammals/TERRESTRIAL_MAMMALS.shp")
+
+    pantheria_traits:
+        command: read.delim("data/raw/Pantheria/PanTHERIA_1-0_WR05_Aug2008.txt")
+
+    iucn_common:
+        command: common_iucn_ranges(iucn_mammal_ranges, pantheria_traits)
+
+    pantheria_common:
+        command: common_pan_traits(iucn_mammal_ranges, pantheria_traits)
+
+    iucn_raster:
+        command: rasterize_iucn_ranges(iucn_common)
