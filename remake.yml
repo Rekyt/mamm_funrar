@@ -13,7 +13,7 @@ targets:
         depends:
         - mammal_funrar
 
-
+    # Download data
     dryad_dataset:
         command: download_lawing_2015()
         packages: rdryad
@@ -21,6 +21,8 @@ targets:
     shapefile_grid:
         command: download_shapefile_grid()
 
+
+    # Treat trait and presence-absence matrix
     raw_mammal_traits:
         command: read.csv("data/raw/dryad.116171/DryadArchive/Traits.csv")
         depends: dryad_dataset
@@ -44,6 +46,15 @@ targets:
     mammal_funrar:
         command: compute_funrar(subset_pres, subset_traits)
         packages: funrar
+
+
+    # Make figures
+    background_grid:
+        command: get_spatial_grid("data/raw/Continent Shapefiles/NorthAmerica.shp")
+        depends: shapefile_grid
+
+    raster_grid:
+        command: rasterize_vector_grid(background_grid)
 
     richness_map:
         command: draw_richness_map(subset_pres)
