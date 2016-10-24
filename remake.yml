@@ -3,6 +3,7 @@ packages:
     - rgdal
     - maptools
     - raster
+    - ggplot2
 
 sources:
     - remake_scripts
@@ -17,12 +18,15 @@ targets:
         command: download_lawing_2015()
         packages: rdryad
 
+    shapefile_grid:
+        command: download_shapefile_grid()
+
     raw_mammal_traits:
         command: read.csv("data/raw/dryad.116171/DryadArchive/Traits.csv")
         depends: dryad_dataset
 
     raw_pres_mat:
-        command: read.csv("data/raw/dryad.116171/DryadArchive/PresAbsMatrix250.csv")
+        command: read.csv("data/raw/dryad.116171/DryadArchive/PresAbsMatrix50.csv")
         depends: dryad_dataset
 
     subset_traits:
