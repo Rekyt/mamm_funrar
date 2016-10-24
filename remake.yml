@@ -10,21 +10,36 @@ sources:
 targets:
     all:
         depends:
-        - iucn_raster
-        - pantheria_common
+        - mammal_funrar
 
 
-    iucn_mammal_ranges:
-        command: readShapePoly("data/raw/iucn_terr_mammals/TERRESTRIAL_MAMMALS.shp")
+    dryad_dataset:
+        command: download_lawing_2015()
+        packages: rdryad
 
-    pantheria_traits:
-        command: read.delim("data/raw/Pantheria/PanTHERIA_1-0_WR05_Aug2008.txt")
+    raw_mammal_traits:
+        command: read.csv("data/raw/dryad.116171/DryadArchive/Traits.csv")
+        depends: dryad_dataset
 
-    iucn_common:
-        command: common_iucn_ranges(iucn_mammal_ranges, pantheria_traits)
+    raw_pres_mat:
+        command: read.csv("data/raw/dryad.116171/DryadArchive/PresAbsMatrix250.csv")
+        depends: dryad_dataset
 
-    pantheria_common:
-        command: common_pan_traits(iucn_mammal_ranges, pantheria_traits)
+    subset_traits:
+        command: select_traits(raw_mammal_traits)
 
-    iucn_raster:
-        command: rasterize_iucn_ranges(iucn_common)
+    subset_pres:
+        command: get_common_species(raw_pres_mat, subset_traits)
+
+    subset_iucn_status:
+        command: get_iucn_status(subset_traits)
+        packages:
+            - taxize
+            - doParallel
+
+    mammal_funrar:
+        command: compute_funrar(subset_pres, subset_traits)
+        packages: funrar
+
+    richness_map:
+        command: draw_richness_map(subset_pres)
