@@ -45,7 +45,9 @@ targets:
 
     mammal_funrar:
         command: compute_funrar(subset_pres, subset_traits)
-        packages: funrar
+        packages:
+            - funrar
+            - Matrix
 
 
     # Make figures
@@ -58,3 +60,4 @@ targets:
 
     richness_map:
         command: draw_richness_map(subset_pres)
+        packages: ggalt

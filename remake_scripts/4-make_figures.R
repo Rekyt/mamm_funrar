@@ -27,7 +27,7 @@ get_spatial_grid = function(shpfilename) {
 
     shpfile = readOGR(dirname(shpfilename), shp_layer)
 
-    shpfile = spTransform(shpfile, CRS(albers_proj4()))
+    #shpfile = spTransform(shpfile, CRS(albers_proj4()))
 
     return(shpfile)
 }
@@ -42,7 +42,7 @@ rasterize_vector_grid = function(vector_data) {
     # Resolution of 50km by 50km
     res(raster_data) = 50000
 
-    raster_data = rasterize(vector_data, raster_data)
+    raster_data = rasterize(vector_data, raster_data, fun = "count")
 
     return(raster_data)
 }
@@ -51,5 +51,6 @@ rasterize_vector_grid = function(vector_data) {
 # ESRI: 102008
 # http://spatialreference.org/ref/esri/north-america-albers-equal-area-conic/
 albers_proj4 = function() {
-    "+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m +no_defs "
+    "+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0
+    +ellps=GRS80 +datum=NAD83 +units=m +no_defs "
 }
