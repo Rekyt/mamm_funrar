@@ -12,6 +12,7 @@ targets:
     all:
         depends:
         - mammal_funrar
+        - richness_map
 
     # Download data
     dryad_dataset:
@@ -60,4 +61,4 @@ targets:
 
     richness_map:
         command: draw_richness_map(subset_pres)
-        packages: ggalt
+        packages: ggthemes
