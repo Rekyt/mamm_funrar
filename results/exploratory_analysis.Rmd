@@ -1,0 +1,108 @@
+---
+title: "Example of Analyses with `funrar`"
+author: "Matthias Grenié"
+date: `r Sys.date()`
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+status_values = c("CR" = "#E41A1C",  # Red
+                  "EN" = "#FF7F00",  # Orange
+                  "VU" = "#FFFF33",  # Yellow
+                  "NT" = "#377EB8",  # Blue
+                  "LC" = "#4DAF4A",  # Green
+                  "DD" = "#984EA3",  # Purple
+                  "NO" = "gray65")   # Gray
+
+theme_set(theme_bw())
+                  
+```
+
+With `funrar` you can compute **Fun**ctional **Rar**ity indices. We are using a North American Mammals datasets to show the kind of questions you can come up with.
+
+For example, you can try to map the hotspots of Regional Functional Uniqueness, i.e. the communities with highest number of functionally unique species (relatively to the whole species pool).
+
+## Functional Uniqueness Hotspots
+
+```{r}
+library(assertr)
+library(dplyr)
+
+# Compute Functional Uniqueness per site
+site_rich = rowSums(subset_pres[, -c(1:3)])
+names(site_rich) = subset_pres$GlobalID
+
+site_coords = subset_pres[, 1:3]
+
+species_ui = mammal_funrar$Ui$Ui
+
+names(species_ui) = mammal_funrar$Ui$species
+
+site_ui = data.frame(site_Ui = (as.matrix(subset_pres[, -c(1:3)]) %*% species_ui) /
+                         site_rich,
+                     GlobalID = site_coords$GlobalID)
+
+site_ui = site_ui %>%
+    verify(nrow(.) == nrow(subset_pres)) %>%
+    filter(!is.na(site_Ui)) %>%
+    inner_join(site_coords, by = "GlobalID")
+```
+
+
+```{r}
+library(ggplot2)
+library(ggalt)
+ggplot(site_ui, aes(x = Longitude, y = Latitude, z = site_Ui)) +
+    stat_summary_2d(bins = 150) +
+    coord_map("albers", at0 = 40, lat1 = 20, xlim = range(site_ui$Longitude),
+              ylim = range(site_ui$Latitude)) +
+    ggthemes::theme_map() +
+    theme(legend.position = c(0.1, 0.2)) +
+    labs(fill = "Average Uniqueness")
+```
+
+
+## Geographical Restrictedness Hotspots
+
+```{r}
+
+```
+
+
+## Relation between IUCN status and Functional Rarity Indices
+
+
+### with Geographical Restrictedness
+
+```{r}
+species_status = mammal_funrar$Ui %>%
+    inner_join(subset_iucn_status %>%
+                   select(TaxonName, IUCN_status) %>%
+                   mutate(species = gsub(" ", "_", TaxonName)) %>%
+                   select(-TaxonName),
+               by = "species") %>%
+    inner_join(mammal_funrar$Ri, by = "species") %>%
+    mutate(IUCN_status = ifelse(is.na(IUCN_status), "NO",
+                                as.character(IUCN_status)))
+
+species_status$IUCN_status = factor(species_status$IUCN_status,
+                                    levels = names(status_values))
+```
+
+
+```{r}
+ggplot(species_status, aes(x = IUCN_status, y = Ri)) +
+    geom_boxplot(aes(fill = IUCN_status)) +
+    scale_fill_manual(values = status_values)
+```
+
+### with Functional Uniqueness
+
+```{r}
+ggplot(species_status, aes(x = IUCN_status, y = Ui)) +
+    geom_boxplot(aes(fill = IUCN_status)) +
+    scale_fill_manual(values = status_values)
+```
+

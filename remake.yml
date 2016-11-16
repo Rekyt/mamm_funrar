@@ -62,3 +62,12 @@ targets:
     richness_map:
         command: draw_richness_map(subset_pres)
         packages: ggthemes
+
+    # Make document
+
+    results/exploratory_analysis.md:
+        depends:
+            - mammal_funrar
+            - subset_pres
+            - subset_iucn_status
+        knitr: true
