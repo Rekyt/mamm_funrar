@@ -1,12 +1,14 @@
 ---
 title: "Example of Analyses with `funrar`"
 author: "Matthias Grenié"
-date: `r Sys.date()`
+date: "`r format(Sys.Date(), '%d %B, %Y')`"
 output: pdf_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(ggplot2)
+
 
 status_values = c("CR" = "#E41A1C",  # Red
                   "EN" = "#FF7F00",  # Orange
@@ -24,7 +26,9 @@ With `funrar` you can compute **Fun**ctional **Rar**ity indices. We are using a 
 
 For example, you can try to map the hotspots of Regional Functional Uniqueness, i.e. the communities with highest number of functionally unique species (relatively to the whole species pool).
 
-## Functional Uniqueness Hotspots
+## Hotspots
+
+### Functional Uniqueness
 
 ```{r}
 library(assertr)
@@ -36,26 +40,35 @@ names(site_rich) = subset_pres$GlobalID
 
 site_coords = subset_pres[, 1:3]
 
-species_ui = mammal_funrar$Ui$Ui
+make_index_df = function(mammal_funrar, index = "Ui") {
+    species_index = mammal_funrar[[index]][[index]]
 
-names(species_ui) = mammal_funrar$Ui$species
+    names(species_index) = mammal_funrar[[index]]$species
+    
+    index_name = paste0("site_", index)
+    
+    site_index = data.frame(
+        given_index = (as.matrix(subset_pres[, -c(1:3)]) %*%
+                                      species_index) / site_rich,
+        GlobalID = site_coords$GlobalID)
+    
+    colnames(site_index)[1] = index_name
+    
+    site_index = site_index %>%
+        verify(nrow(.) == nrow(subset_pres)) %>%
+        filter_(paste0("!is.na(", site_index,")")) %>%
+        inner_join(site_coords, by = "GlobalID")
+    
+    return(site_index)
+}
 
-site_ui = data.frame(site_Ui = (as.matrix(subset_pres[, -c(1:3)]) %*% species_ui) /
-                         site_rich,
-                     GlobalID = site_coords$GlobalID)
-
-site_ui = site_ui %>%
-    verify(nrow(.) == nrow(subset_pres)) %>%
-    filter(!is.na(site_Ui)) %>%
-    inner_join(site_coords, by = "GlobalID")
+site_ui = make_index_df(mammal_funrar, "Ui")
 ```
 
 
 ```{r}
-library(ggplot2)
-library(ggalt)
 ggplot(site_ui, aes(x = Longitude, y = Latitude, z = site_Ui)) +
-    stat_summary_2d(bins = 150) +
+    stat_summary_2d(bins = 150, color = NA) +
     coord_map("albers", at0 = 40, lat1 = 20, xlim = range(site_ui$Longitude),
               ylim = range(site_ui$Latitude)) +
     ggthemes::theme_map() +
@@ -64,11 +77,27 @@ ggplot(site_ui, aes(x = Longitude, y = Latitude, z = site_Ui)) +
 ```
 
 
-## Geographical Restrictedness Hotspots
+### Geographical Restrictedness
+
+```{r}
+site_ri = make_index_df(mammal_funrar, "Ri")
+
+ggplot(site_ri, aes(x = Longitude, y = Latitude, z = site_Ri)) +
+    stat_summary_2d(bins = 150, color = NA) +
+    coord_map("albers", at0 = 40, lat1 = 20, xlim = range(site_ri$Longitude),
+              ylim = range(site_ri$Latitude)) +
+    ggthemes::theme_map() +
+    theme(legend.position = c(0.1, 0.2)) +
+    labs(fill = "Average Restrictedness")
+```
+
+
+## Total distribution of indices
 
 ```{r}
 
 ```
+
 
 
 ## Relation between IUCN status and Functional Rarity Indices
@@ -79,9 +108,9 @@ ggplot(site_ui, aes(x = Longitude, y = Latitude, z = site_Ui)) +
 ```{r}
 species_status = mammal_funrar$Ui %>%
     inner_join(subset_iucn_status %>%
-                   select(TaxonName, IUCN_status) %>%
+                   dplyr::select(TaxonName, IUCN_status) %>%
                    mutate(species = gsub(" ", "_", TaxonName)) %>%
-                   select(-TaxonName),
+                   dplyr::select(-TaxonName),
                by = "species") %>%
     inner_join(mammal_funrar$Ri, by = "species") %>%
     mutate(IUCN_status = ifelse(is.na(IUCN_status), "NO",

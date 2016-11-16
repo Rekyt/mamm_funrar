@@ -4,6 +4,7 @@ packages:
     - maptools
     - raster
     - ggplot2
+    - knitr
 
 sources:
     - remake_scripts
@@ -11,8 +12,7 @@ sources:
 targets:
     all:
         depends:
-        - mammal_funrar
-        - richness_map
+        - results/exploratory_analysis.pdf
 
     # Download data
     dryad_dataset:
@@ -65,9 +65,10 @@ targets:
 
     # Make document
 
-    results/exploratory_analysis.md:
+    results/exploratory_analysis.pdf:
+        command: render("results/exploratory_analysis.Rmd", I("pdf_document"))
         depends:
             - mammal_funrar
             - subset_pres
             - subset_iucn_status
-        knitr: true
+
