@@ -73,7 +73,8 @@ ggplot(site_ui, aes(x = Longitude, y = Latitude, z = site_Ui)) +
               ylim = range(site_ui$Latitude)) +
     ggthemes::theme_map() +
     theme(legend.position = c(0.1, 0.2)) +
-    labs(fill = "Average Uniqueness")
+    labs(fill = "Average Uniqueness") +
+    scale_fill_distiller(palette = "YlOrRd", direction = 1)
 ```
 
 
@@ -88,15 +89,33 @@ ggplot(site_ri, aes(x = Longitude, y = Latitude, z = site_Ri)) +
               ylim = range(site_ri$Latitude)) +
     ggthemes::theme_map() +
     theme(legend.position = c(0.1, 0.2)) +
-    labs(fill = "Average Restrictedness")
+    labs(fill = "Average Restrictedness") +
+    scale_fill_distiller(palette = "YlOrRd", direction = 1)
 ```
 
-
-## Total distribution of indices
+### Functional Distinctiveness
 
 ```{r}
+# Average Functional Distinctiveness
+site_di = rowMeans(mammal_funrar$Di, na.rm = T) %>%
+    as_data_frame() %>%
+    mutate(GlobalID = rownames(.)) %>%
+    rename(avg_Di = value) %>%
+    inner_join(site_ri %>%
+                   select(GlobalID, Longitude, Latitude) %>%
+                   mutate(GlobalID = as.character(GlobalID)),
+               by = "GlobalID")
 
+ggplot(site_di, aes(x = Longitude, y = Latitude, z = avg_Di)) +
+    stat_summary_2d(bins = 150, color = NA) +
+    coord_map("albers", at0 = 40, lat1 = 20, xlim = range(site_di$Longitude),
+              ylim = range(site_di$Latitude)) +
+    ggthemes::theme_map() +
+    theme(legend.position = c(0.1, 0.2)) +
+    labs(fill = "Average Distinctiveness") +
+    scale_fill_distiller(palette = "YlOrRd", direction = 1)
 ```
+
 
 
 
@@ -107,31 +126,85 @@ ggplot(site_ri, aes(x = Longitude, y = Latitude, z = site_Ri)) +
 
 ```{r}
 species_status = mammal_funrar$Ui %>%
+    # Add IUCN status
     inner_join(subset_iucn_status %>%
                    dplyr::select(TaxonName, IUCN_status) %>%
                    mutate(species = gsub(" ", "_", TaxonName)) %>%
                    dplyr::select(-TaxonName),
                by = "species") %>%
+    # Add Geographical Restrictedness
     inner_join(mammal_funrar$Ri, by = "species") %>%
     mutate(IUCN_status = ifelse(is.na(IUCN_status), "NO",
-                                as.character(IUCN_status)))
+                                as.character(IUCN_status))) %>%
+    mutate(std_Ui = (Ui - min(Ui))/(max(Ui) - min(Ui)))
 
 species_status$IUCN_status = factor(species_status$IUCN_status,
                                     levels = names(status_values))
+
+summary(species_status)
 ```
 
 
 ```{r}
 ggplot(species_status, aes(x = IUCN_status, y = Ri)) +
     geom_boxplot(aes(fill = IUCN_status)) +
-    scale_fill_manual(values = status_values)
+    scale_fill_manual(values = status_values) +
+    labs(x = "IUCN Status",
+         y = "Geographical Restrictedness") +
+    theme(legend.position = "none")
 ```
 
 ### with Functional Uniqueness
 
 ```{r}
-ggplot(species_status, aes(x = IUCN_status, y = Ui)) +
-    geom_boxplot(aes(fill = IUCN_status)) +
-    scale_fill_manual(values = status_values)
+ggplot(species_status, aes(x = IUCN_status, y = std_Ui)) +
+    geom_boxplot(aes(fill = IUCN_status), outlier.colour = NA) +
+    geom_jitter(alpha = 0.5) +
+    scale_fill_manual(values = status_values) +
+    labs(x = "IUCN Status",
+         y = "Functional Uniqueness (scaled)") +
+    theme(legend.position = "none")
+```
+
+
+## Total distribution of indices
+
+### Geographical Restrictedness
+
+```{r}
+divr::make_quantile_density(species_status$Ri*100) +
+    labs(x = "Geographical Restrictedness * 100",
+         y = "Density",
+         fill = NULL)
+```
+
+
+### Functional Uniqueness
+
+```{r}
+divr::make_quantile_density(species_status$Ui*100) +
+    labs(x = "Functional Uniqueness * 100",
+         y = "Density",
+         fill = NULL)
+```
+
+
+### Biplot
+
+```{r, fig.height=6.5, fig.width=7}
+ggplot(species_status, aes(x = std_Ui, y = Ri)) +
+    geom_point() +
+    labs(x = "Functional Uniqueness",
+         y = "Geographical Restrictedness",
+         title = "Species Regional Indices")
+```
+
+```{r, fig.height=6.5, fig.width=7}
+ggplot(species_status, aes(x = std_Ui, y = Ri, color = IUCN_status)) +
+    geom_point(size = 1.5, alpha = 0.8) +
+    scale_color_manual(values = status_values) +
+    labs(x = "Functional Uniqueness",
+         y = "Geographical Restrictedness",
+         title = "Species Regional Indices")
 ```
 
