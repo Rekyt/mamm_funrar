@@ -71,4 +71,5 @@ targets:
             - mammal_funrar
             - subset_pres
             - subset_iucn_status
+        packages: rmarkdown
 

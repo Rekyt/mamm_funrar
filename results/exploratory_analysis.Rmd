@@ -102,7 +102,7 @@ site_di = rowMeans(mammal_funrar$Di, na.rm = T) %>%
     mutate(GlobalID = rownames(.)) %>%
     rename(avg_Di = value) %>%
     inner_join(site_ri %>%
-                   select(GlobalID, Longitude, Latitude) %>%
+                   dplyr::select(GlobalID, Longitude, Latitude) %>%
                    mutate(GlobalID = as.character(GlobalID)),
                by = "GlobalID")
 
