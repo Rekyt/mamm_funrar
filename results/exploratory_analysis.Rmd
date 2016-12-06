@@ -74,7 +74,9 @@ ggplot(site_ui, aes(x = Longitude, y = Latitude, z = site_Ui)) +
     ggthemes::theme_map() +
     theme(legend.position = c(0.1, 0.2)) +
     labs(fill = "Average Uniqueness") +
-    scale_fill_distiller(palette = "YlOrRd", direction = 1)
+    scale_fill_distiller(palette = "YlOrRd", direction = 1) +
+    borders(xlim = c(-170, -23), ylim = c(9.5,83), size = 0.01,
+            colour = "gray65")
 ```
 
 
@@ -97,7 +99,7 @@ ggplot(site_ri, aes(x = Longitude, y = Latitude, z = site_Ri)) +
 
 ```{r}
 # Average Functional Distinctiveness
-site_di = rowMeans(mammal_funrar$Di, na.rm = T) %>%
+site_di = rowMeans(as.matrix(mammal_funrar$Di), na.rm = T) %>%
     as_data_frame() %>%
     mutate(GlobalID = rownames(.)) %>%
     rename(avg_Di = value) %>%
@@ -112,7 +114,7 @@ ggplot(site_di, aes(x = Longitude, y = Latitude, z = avg_Di)) +
               ylim = range(site_di$Latitude)) +
     ggthemes::theme_map() +
     theme(legend.position = c(0.1, 0.2)) +
-    labs(fill = "Average Distinctiveness") +
+    labs(fill = "Average Distinctiveness per site") +
     scale_fill_distiller(palette = "YlOrRd", direction = 1)
 ```
 
@@ -206,5 +208,26 @@ ggplot(species_status, aes(x = std_Ui, y = Ri, color = IUCN_status)) +
     labs(x = "Functional Uniqueness",
          y = "Geographical Restrictedness",
          title = "Species Regional Indices")
+```
+
+
+### Functional Distinctiveness
+
+```{r}
+mammal_di = as.matrix(mammal_funrar$Di)
+
+only_di = mammal_di[!is.na(mammal_di)]
+
+divr::make_quantile_density(only_di*100) +
+    labs(x = "Functional Distinctiveness*100",
+         y = "Density",
+         fill = NULL)
+```
+
+```{r}
+divr::make_quantile_density(colMeans(mammal_di, na.rm = TRUE) *100) +
+    labs(x = "Species Average Functional Distinctiveness*100",
+         y = "Density",
+         fill = NULL)
 ```
 
