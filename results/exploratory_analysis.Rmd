@@ -67,7 +67,7 @@ site_ui = make_index_df(mammal_funrar, "Ui")
 
 
 ```{r}
-ggplot(site_ui, aes(x = Longitude, y = Latitude, z = site_Ui)) +
+ui_map = ggplot(site_ui, aes(x = Longitude, y = Latitude, z = site_Ui)) +
     stat_summary_2d(bins = 150, color = NA) +
     coord_map("albers", at0 = 40, lat1 = 20, xlim = range(site_ui$Longitude),
               ylim = range(site_ui$Latitude)) +
@@ -77,6 +77,8 @@ ggplot(site_ui, aes(x = Longitude, y = Latitude, z = site_Ui)) +
     scale_fill_distiller(palette = "YlOrRd", direction = 1) +
     borders(xlim = c(-170, -23), ylim = c(9.5,83), size = 0.01,
             colour = "gray65")
+
+ui_map
 ```
 
 
@@ -85,7 +87,7 @@ ggplot(site_ui, aes(x = Longitude, y = Latitude, z = site_Ui)) +
 ```{r}
 site_ri = make_index_df(mammal_funrar, "Ri")
 
-ggplot(site_ri, aes(x = Longitude, y = Latitude, z = site_Ri)) +
+ri_map = ggplot(site_ri, aes(x = Longitude, y = Latitude, z = site_Ri)) +
     stat_summary_2d(bins = 150, color = NA) +
     coord_map("albers", at0 = 40, lat1 = 20, xlim = range(site_ri$Longitude),
               ylim = range(site_ri$Latitude)) +
@@ -93,6 +95,8 @@ ggplot(site_ri, aes(x = Longitude, y = Latitude, z = site_Ri)) +
     theme(legend.position = c(0.1, 0.2)) +
     labs(fill = "Average Restrictedness") +
     scale_fill_distiller(palette = "YlOrRd", direction = 1)
+
+ri_map
 ```
 
 ### Functional Distinctiveness
@@ -108,7 +112,7 @@ site_di = rowMeans(as.matrix(mammal_funrar$Di), na.rm = T) %>%
                    mutate(GlobalID = as.character(GlobalID)),
                by = "GlobalID")
 
-ggplot(site_di, aes(x = Longitude, y = Latitude, z = avg_Di)) +
+di_map = ggplot(site_di, aes(x = Longitude, y = Latitude, z = avg_Di)) +
     stat_summary_2d(bins = 150, color = NA) +
     coord_map("albers", at0 = 40, lat1 = 20, xlim = range(site_di$Longitude),
               ylim = range(site_di$Latitude)) +
@@ -116,6 +120,8 @@ ggplot(site_di, aes(x = Longitude, y = Latitude, z = avg_Di)) +
     theme(legend.position = c(0.1, 0.2)) +
     labs(fill = "Average Distinctiveness per site") +
     scale_fill_distiller(palette = "YlOrRd", direction = 1)
+
+di_map
 ```
 
 
@@ -194,11 +200,13 @@ divr::make_quantile_density(species_status$Ui*100) +
 ### Biplot
 
 ```{r, fig.height=6.5, fig.width=7}
-ggplot(species_status, aes(x = std_Ui, y = Ri)) +
+biplot_ui_Ri = ggplot(species_status, aes(x = std_Ui, y = Ri)) +
     geom_point() +
     labs(x = "Functional Uniqueness",
          y = "Geographical Restrictedness",
          title = "Species Regional Indices")
+
+biplot_ui_Ri
 ```
 
 ```{r, fig.height=6.5, fig.width=7}
@@ -218,16 +226,19 @@ mammal_di = as.matrix(mammal_funrar$Di)
 
 only_di = mammal_di[!is.na(mammal_di)]
 
-divr::make_quantile_density(only_di*100) +
-    labs(x = "Functional Distinctiveness*100",
+dens_di = divr::make_quantile_density(only_di) +
+    labs(x = "Functional Distinctiveness",
          y = "Density",
          fill = NULL)
+dens_di
 ```
 
 ```{r}
-divr::make_quantile_density(colMeans(mammal_di, na.rm = TRUE) *100) +
-    labs(x = "Species Average Functional Distinctiveness*100",
+dens_avg_di = divr::make_quantile_density(colMeans(mammal_di, na.rm = TRUE)) +
+    labs(x = "Species Average Functional Distinctiveness",
          y = "Density",
          fill = NULL)
+
+dens_avg_di
 ```
 
