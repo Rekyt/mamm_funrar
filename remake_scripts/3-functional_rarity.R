@@ -70,3 +70,24 @@ format_presence_matrix = function(pres_mat) {
 
     return(pres_mat)
 }
+
+
+# Compute Null models ----------------------------------------------------------
+
+compute_null_funrar = function(pres_matrix, trait_df) {
+
+    cleaned_trait_df = format_trait(trait_df)
+    # Format presence-absence matrix
+    cleaned_pres_mat = format_presence_matrix(pres_matrix)
+
+    distance_matrix = compute_dist_matrix(cleaned_trait_df)
+
+
+    null_model = vegan::nullmodel(cleaned_pres_mat, "curveball")
+
+    sim_pres = simulate(null_model, nsim = 1000, thin = 1000)
+
+    # Get functional rarity indices
+    species_funrar = funrar(, distance_matrix)
+
+}
