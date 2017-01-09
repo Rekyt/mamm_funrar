@@ -8,8 +8,7 @@ compute_funrar = function(pres_matrix, trait_df) {
 
 
     # Format presence-absence matrix
-    cleaned_pres_mat = format_presence_matrix(pres_matrix)
-
+    cleaned_pres_mat = as(pres_matrix, "sparseMatrix")
 
     distance_matrix = compute_dist_matrix(cleaned_trait_df)
 
@@ -65,8 +64,6 @@ format_presence_matrix = function(pres_mat) {
     pres_mat = pres_mat[which(rowSums(pres_mat) != 0),]
 
     names(dimnames(pres_mat)) = c("Sites", "TaxonName")
-
-    pres_mat = as(pres_mat, "sparseMatrix")
 
     return(pres_mat)
 }

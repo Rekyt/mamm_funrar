@@ -44,8 +44,11 @@ targets:
             - taxize
             - doParallel
 
+    pres_matrix:
+        command: format_presence_matrix(subset_pres)
+
     mammal_funrar:
-        command: compute_funrar(subset_pres, subset_traits)
+        command: compute_funrar(pres_matrix, subset_traits)
         packages:
             - funrar
             - Matrix
