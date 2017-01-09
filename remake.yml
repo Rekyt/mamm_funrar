@@ -52,12 +52,20 @@ targets:
 
     dist_matrix:
         command: compute_dist_matrix(trait_df)
+        packages:
+            - funrar
 
     mammal_funrar:
         command: compute_funrar(pres_matrix, subset_traits)
         packages:
             - funrar
             - Matrix
+
+    null_funrar:
+        command: compute_null_funrar(pres_matrix, dist_matrix)
+        packages:
+            - funrar
+            - vegan
 
 
     # Make figures

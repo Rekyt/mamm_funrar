@@ -71,16 +71,9 @@ format_presence_matrix = function(pres_mat) {
 
 # Compute Null models ----------------------------------------------------------
 
-compute_null_funrar = function(pres_matrix, trait_df) {
+compute_null_funrar = function(pres_matrix, distance_matrix) {
 
-    cleaned_trait_df = format_trait(trait_df)
-    # Format presence-absence matrix
-    cleaned_pres_mat = format_presence_matrix(pres_matrix)
-
-    distance_matrix = compute_dist_matrix(cleaned_trait_df)
-
-
-    null_model = vegan::nullmodel(cleaned_pres_mat, "curveball")
+    null_model = vegan::nullmodel(pres_matrix, "curveball")
 
     sim_pres = simulate(null_model, nsim = 100, burnin = 10^4, thin = 1000)
 
