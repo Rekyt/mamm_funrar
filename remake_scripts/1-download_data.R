@@ -19,7 +19,8 @@ download_lawing_2015 = function() {
     tempfile(dryad_archive)
 
     # Download file
-    dryad_fetch(download_url(dryad_handle), destfile = dryad_archive, mode = "wb")
+    dryad_fetch(download_url(handle = dryad_handle), destfile = dryad_archive,
+                mode = "wb")
 
     # Extract archive
     unzip(dryad_archive, exdir = substr(dryad_dir, 1, nchar(dryad_dir) - 1))
