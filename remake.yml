@@ -47,6 +47,12 @@ targets:
     pres_matrix:
         command: format_presence_matrix(subset_pres)
 
+    trait_df:
+        command: format_trait(subset_traits)
+
+    dist_matrix:
+        command: compute_dist_matrix(trait_df)
+
     mammal_funrar:
         command: compute_funrar(pres_matrix, subset_traits)
         packages:

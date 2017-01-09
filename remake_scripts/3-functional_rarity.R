@@ -82,9 +82,14 @@ compute_null_funrar = function(pres_matrix, trait_df) {
 
     null_model = vegan::nullmodel(cleaned_pres_mat, "curveball")
 
-    sim_pres = simulate(null_model, nsim = 1000, thin = 1000)
+    sim_pres = simulate(null_model, nsim = 100, burnin = 10^4, thin = 1000)
 
     # Get functional rarity indices
-    species_funrar = funrar(, distance_matrix)
+    null_sm = apply(sim_pres, 3, function(x) {
+        sparse_x = as(x, "sparseMatrix")
 
+        funrar(sparse_x, distance_matrix)
+    })
+
+    return(null_sm)
 }
