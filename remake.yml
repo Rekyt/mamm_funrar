@@ -67,6 +67,10 @@ targets:
             - funrar
             - vegan
 
+    shuffled_traits_funrar:
+        command: compute_null_traits(pres_matrix, trait_df)
+        packages:
+            - funrar
 
     # Make figures
     background_grid:
