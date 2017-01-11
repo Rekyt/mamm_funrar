@@ -31,7 +31,6 @@ For example, you can try to map the hotspots of Regional Functional Uniqueness, 
 ### Functional Uniqueness
 
 ```{r}
-library(assertr)
 library(dplyr)
 
 # Compute Functional Uniqueness per site
@@ -55,7 +54,6 @@ make_index_df = function(mammal_funrar, index = "Ui") {
     colnames(site_index)[1] = index_name
     
     site_index = site_index %>%
-        verify(nrow(.) == nrow(subset_pres)) %>%
         filter_(paste0("!is.na(", site_index,")")) %>%
         inner_join(site_coords, by = "GlobalID")
     
@@ -240,5 +238,50 @@ dens_avg_di = divr::make_quantile_density(colMeans(mammal_di, na.rm = TRUE)) +
          fill = NULL)
 
 dens_avg_di
+```
+
+
+## Latitudinal gradient in average index
+
+
+### Functional Uniqueness
+
+```{r}
+latitudinal_ui = ggplot(site_ui, aes(x = Latitude, y = site_Ui)) +
+    geom_point(alpha = 0.3, color = "darkblue") +
+    geom_smooth() +
+    labs(x     = expression('Latitude ('*degree*'N)'),
+         y     = "Average Site Uniqueness",
+         title = "Latitudinal Gradient of Uniqueness (n=9497)")
+
+latitudinal_ui
+```
+
+
+### Geographical Restrictedness
+
+```{r}
+latitudinal_ri = ggplot(site_ri, aes(x = Latitude, y = site_Ri)) +
+    geom_point(alpha = 0.3, color = "darkblue") +
+    geom_smooth() +
+    labs(x     = expression('Latitude ('*degree*'N)'),
+         y     = "Average Site Restrictedness",
+         title = "Latitudinal Gradient of Restrictedness (n=9497)")
+
+latitudinal_ri
+```
+
+
+### Functional Distinctiveness
+
+```{r}
+latitudinal_di = ggplot(site_di, aes(x = Latitude, y = avg_Di)) +
+    geom_point(alpha = 0.3, color = "darkblue") +
+    geom_smooth() +
+    labs(x     = expression('Latitude ('*degree*'N)'),
+         y     = "Average Site Restdictedness",
+         title = "Latitudinal Gradient of Restdictedness (n=9055)")
+
+latitudinal_di
 ```
 
