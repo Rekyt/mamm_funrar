@@ -61,13 +61,13 @@ targets:
             - funrar
             - Matrix
 
-    null_funrar:
+    null_shuffled_matrix:
         command: compute_null_funrar(pres_matrix, dist_matrix)
         packages:
             - funrar
             - vegan
 
-    shuffled_traits_ui:
+    null_shuffled_traits:
         command: compute_null_traits(pres_matrix, trait_df)
         packages:
             - funrar
@@ -92,7 +92,7 @@ targets:
             - mammal_funrar
             - subset_pres
             - subset_iucn_status
-            - null_funrar
-            - shuffled_traits_ui
+            - null_shuffled_matrix
+            - null_shuffled_traits
         packages: rmarkdown
 
