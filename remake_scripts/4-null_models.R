@@ -44,8 +44,7 @@ compute_null_traits = function(pres_matrix, trait_df, nrepet = 150) {
             function(x) {
                 Ui = uniqueness(as(pres_matrix, "sparseMatrix"),
                                 compute_dist_matrix(x))
-                Ri = restrictedness(as(pres_matrix, "sparseMatrix"),
-                                    compute_dist_matrix(x))
+                Ri = restrictedness(as(pres_matrix, "sparseMatrix"))
                 return(list(Ui = Ui, Ri = Ri))
             }
         )
