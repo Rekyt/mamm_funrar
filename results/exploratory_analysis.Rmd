@@ -9,7 +9,7 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 library(ggplot2)
 
-
+# Define colors for IUCN status
 status_values = c("CR" = "#E41A1C",  # Red
                   "EN" = "#FF7F00",  # Orange
                   "VU" = "#FFFF33",  # Yellow
@@ -19,7 +19,6 @@ status_values = c("CR" = "#E41A1C",  # Red
                   "NO" = "gray65")   # Gray
 
 theme_set(theme_bw())
-                  
 ```
 
 With `funrar` you can compute **Fun**ctional **Rar**ity indices. We are using a North American Mammals datasets to show the kind of questions you can come up with.
@@ -178,8 +177,8 @@ ggplot(species_status, aes(x = IUCN_status, y = std_Ui)) +
 ### Geographical Restrictedness
 
 ```{r}
-divr::make_quantile_density(species_status$Ri*100) +
-    labs(x = "Geographical Restrictedness * 100",
+divr::make_quantile_density(species_status$Ri) +
+    labs(x = "Geographical Restrictedness",
          y = "Density",
          fill = NULL)
 ```
@@ -188,24 +187,42 @@ divr::make_quantile_density(species_status$Ri*100) +
 ### Functional Uniqueness
 
 ```{r}
-divr::make_quantile_density(species_status$Ui*100) +
-    labs(x = "Functional Uniqueness * 100",
+divr::make_quantile_density(species_status$Ui) +
+    labs(x = "Functional Uniqueness",
          y = "Density",
-         fill = NULL)
+         fill = NULL) +
+    geom_density(data = null_flat_ui, aes(x = Ui, y = ..density..),
+                 color = "cornflowerblue", size = 0.5, show.legend = FALSE)
 ```
 
 
 ### Biplot
 
 ```{r, fig.height=6.5, fig.width=7}
-biplot_ui_Ri = ggplot(species_status, aes(x = std_Ui, y = Ri)) +
+biplot_ui_ri = ggplot(species_status, aes(x = std_Ui, y = Ri)) +
     geom_point() +
     labs(x = "Functional Uniqueness",
          y = "Geographical Restrictedness",
          title = "Species Regional Indices")
 
-biplot_ui_Ri
+biplot_ui_ri
 ```
+
+
+```{r null_models_ui_ri, fig.height=6.5, fig.width=7}
+biplot_ui_ri_null = ggplot(species_status, aes(x = Ui, y = Ri)) +
+    geom_point(data = null_flat_ui, colour = "lightblue", alpha = 0.4) +
+    geom_point() +
+    geom_rug() +
+    labs(x = "Functional Uniqueness",
+         y = "Geographical Restrictedness",
+         title = "Species Regional Indices with null model (shuffled traits)")
+
+biplot_ui_ri_null
+```
+
+
+#### With IUCN status
 
 ```{r, fig.height=6.5, fig.width=7}
 ggplot(species_status, aes(x = std_Ui, y = Ri, color = IUCN_status)) +
@@ -225,11 +242,32 @@ mammal_di = as.matrix(mammal_funrar$Di)
 only_di = mammal_di[!is.na(mammal_di)]
 
 dens_di = divr::make_quantile_density(only_di) +
-    labs(x = "Functional Distinctiveness",
-         y = "Density",
-         fill = NULL)
+    labs(x     = "Functional Distinctiveness",
+         y     = "Density",
+         fill  = NULL,
+         title = "Density of each species-site Distinctiveness value")
 dens_di
 ```
+
+```{r}
+null_di = null_shuffled_matrix %>%
+    lapply(as.matrix) %>%
+    purrr::map(~.x[!is.na(.x)]) %>%
+    purrr::map(~data.frame(Di = .x) %>%
+                   mutate(type = "null"))
+
+all_di = data.frame(Di = only_di) %>%
+    mutate(type = "observed") %>%
+    bind_rows(null_di)
+
+
+ggplot(all_di, aes(x = Di, colour = type)) +
+    geom_density() +
+    labs(x     = "Functional Distinctiveness",
+         y     = "Density",
+         title = "Site-Species Di Density with null model")
+```
+
 
 ```{r}
 dens_avg_di = divr::make_quantile_density(colMeans(mammal_di, na.rm = TRUE)) +
@@ -279,8 +317,8 @@ latitudinal_di = ggplot(site_di, aes(x = Latitude, y = avg_Di)) +
     geom_point(alpha = 0.3, color = "darkblue") +
     geom_smooth() +
     labs(x     = expression('Latitude ('*degree*'N)'),
-         y     = "Average Site Restdictedness",
-         title = "Latitudinal Gradient of Restdictedness (n=9055)")
+         y     = "Average Site Distinctiveness",
+         title = "Latitudinal Gradient of Distinctiveness (n=9055)")
 
 latitudinal_di
 ```

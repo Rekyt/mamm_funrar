@@ -42,10 +42,10 @@ compute_null_traits = function(pres_matrix, trait_df, nrepet = 150) {
     null_traits_funrar = null_traits %>%
         lapply(
             function(x) {
-                Ui = uniqueness(as(pres_matrix, "sparseMatrix"),
-                                compute_dist_matrix(x))
-                Ri = restrictedness(as(pres_matrix, "sparseMatrix"))
-                return(list(Ui = Ui, Ri = Ri))
+
+                sparse_pres = as(pres_matrix, "sparseMatrix")
+
+                uniqueness(sparse_pres, compute_dist_matrix(x))
             }
         )
 
@@ -53,9 +53,10 @@ compute_null_traits = function(pres_matrix, trait_df, nrepet = 150) {
 }
 
 # Get all the uniqueness values for all null models
-flatten_null_uniqueness = function(null_traits) {
+flatten_null_uniqueness = function(null_traits, mammal_funrar) {
     null_traits %>%
         purrr::reduce(inner_join, by = "species") %>%
         tidyr::gather(name, Ui, -species) %>%
-        dplyr::select(-name)
+        dplyr::select(-name) %>%
+        inner_join(mammal_funrar$Ri, by = "species")
 }

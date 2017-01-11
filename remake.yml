@@ -72,6 +72,9 @@ targets:
         packages:
             - funrar
 
+    null_flat_ui:
+        command: flatten_null_uniqueness(null_shuffled_traits, mammal_funrar)
+
     # Make figures
     background_grid:
         command: get_spatial_grid("data/raw/Continent Shapefiles/NorthAmerica.shp")
@@ -93,6 +96,6 @@ targets:
             - subset_pres
             - subset_iucn_status
             - null_shuffled_matrix
-            - null_shuffled_traits
+            - null_flat_ui
         packages: rmarkdown
 
