@@ -236,6 +236,8 @@ ggplot(species_status, aes(x = std_Ui, y = Ri, color = IUCN_status)) +
 
 ### Functional Distinctiveness
 
+#### For each site-species combination
+
 ```{r}
 mammal_di = as.matrix(mammal_funrar$Di)
 
@@ -268,6 +270,7 @@ ggplot(all_di, aes(x = Di, colour = type)) +
          title = "Site-Species Di Density with null model")
 ```
 
+#### Average Distinctiveness of a species across all sites
 
 ```{r}
 dens_avg_di = divr::make_quantile_density(colMeans(mammal_di, na.rm = TRUE)) +
@@ -278,8 +281,24 @@ dens_avg_di = divr::make_quantile_density(colMeans(mammal_di, na.rm = TRUE)) +
 dens_avg_di
 ```
 
+```{r}
+null_avg_di = null_shuffled_matrix %>%
+    lapply(as.matrix) %>%
+    lapply(colMeans, na.rm = TRUE) %>%
+    purrr::map(~data.frame(avg_Di = .x) %>%
+                   mutate(type = "null"))
 
-## Latitudinal gradient in average index
+avg_di = data.frame(avg_Di = colMeans(mammal_di, na.rm = TRUE),
+                    type = "observed") %>%
+    bind_rows(null_avg_di)
+
+ggplot(avg_di, aes(x = avg_Di, colour = type)) +
+    geom_density() +
+    labs(x     = "Average Distinctiveness across all Sites",
+         y     = "Density",
+         title = "Average Species Di Density with null model")
+```
+
 
 
 ### Functional Uniqueness
@@ -302,6 +321,7 @@ latitudinal_ui
 latitudinal_ri = ggplot(site_ri, aes(x = Latitude, y = site_Ri)) +
     geom_point(alpha = 0.3, color = "darkblue") +
     geom_smooth() +
+    geom_smooth(method = "lm", color = "darkred") +
     labs(x     = expression('Latitude ('*degree*'N)'),
          y     = "Average Site Restrictedness",
          title = "Latitudinal Gradient of Restrictedness (n=9497)")
