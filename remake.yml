@@ -67,7 +67,7 @@ targets:
             - funrar
             - vegan
 
-    shuffled_traits_funrar:
+    shuffled_traits_ui:
         command: compute_null_traits(pres_matrix, trait_df)
         packages:
             - funrar
@@ -92,5 +92,7 @@ targets:
             - mammal_funrar
             - subset_pres
             - subset_iucn_status
+            - null_funrar
+            - shuffled_traits_ui
         packages: rmarkdown
 
