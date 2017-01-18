@@ -1,10 +1,6 @@
 packages:
     - dplyr
-    - rgdal
-    - maptools
-    - raster
     - ggplot2
-    - knitr
 
 sources:
     - scripts
@@ -12,7 +8,7 @@ sources:
 targets:
     all:
         depends:
-        - results/exploratory_analysis.pdf
+        - README.md
 
     # Download data
     dryad_dataset:
@@ -75,3 +71,10 @@ targets:
             - null_flat_ui
         packages: rmarkdown
 
+    # Final run
+    README.md:
+        command: render_readme("README.Rmd")
+        depends:
+            - results/exploratory_analysis.pdf
+            - refs.bib
+        packages: rmarkdown

@@ -1,4 +1,4 @@
-# Function to download data from Lawing et al. 2015 doi:10.5061/dryad.9t0n8
+# Function to download data from Lawing et al. 2016 doi:10.5061/dryad.9t0n8
 
 download_lawing_2015 = function() {
     # Get the handle to download the data from Dryad

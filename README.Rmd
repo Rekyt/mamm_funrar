@@ -1,0 +1,56 @@
+---
+title: "North and Central American Mammals Functional Rarity Read Me"
+author: "Matthias Grenié"
+date: "`r format(Sys.Date(), '%d %B, %Y')`"
+output: rmarkdown::github_document
+always_allow_html: yes
+bibliography: refs.bib
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, fig.path = "README_figs/README-")
+```
+
+## `mamm_funrar`
+
+This repository contains a worked through example of the use of [`funrar`R package](https://cran.r-project.org/package=funrar) in the context of biogeography using a publicly available dataset on North and Central American mammals [@lawing_community_2016; @lawing_data_2016].
+
+The dataset is available through Dryad there: [doi:10.5061/dryad.9t0n8](https://doi.org/10.5061/dryad.9t0n8)
+
+### Dependencies
+
+The analysis strongly depends on several packages:
+
+* [`remake`](https://github.com/richfitz/remake) to make the analysis portable and reproducible,
+* [`dplyr`](https://github.com/hadley/dplyr) for data wrangling,
+* [`rdryad`](https://github.com/ropensci/rdryad) to download the date from Dryad,
+* [`rmarkdown`](https://github.com/rstudio/rmarkdown/) to generate the analysis report,
+* [`vegan`](https://github.com/vegandevs/vegan) to compute null models for site-species matrix,
+* [`ggplot2`](https://github.com/tidyverse/ggplot2) to plot figures in reports,
+* [`devtools`](https://github.com/hadley/devtools) for session info diagnostics,
+* [`funrar`](https://cran.r-project.org/package=funrar) to compute functional rarity indices.
+
+### Session Info
+
+```{r}
+devtools::session_info()
+```
+
+
+### How to run
+
+To run the analysis on your computer, install `remake`, make the working directory the project directory and run:
+
+```
+remake::make()
+```
+
+You will see the full analysis run on your computer.
+With remake all the intermediate objects are viewable on a dependency graph:
+
+```{r}
+remake::diagram()
+```
+
+
+## References
