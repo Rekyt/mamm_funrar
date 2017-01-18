@@ -9,15 +9,6 @@ output: pdf_document
 knitr::opts_chunk$set(echo = FALSE)
 library(ggplot2)
 
-# Define colors for IUCN status
-status_values = c("CR" = "#E41A1C",  # Red
-                  "EN" = "#FF7F00",  # Orange
-                  "VU" = "#FFFF33",  # Yellow
-                  "NT" = "#377EB8",  # Blue
-                  "LC" = "#4DAF4A",  # Green
-                  "DD" = "#984EA3",  # Purple
-                  "NO" = "gray65")   # Gray
-
 theme_set(theme_bw())
 ```
 
@@ -32,12 +23,13 @@ For example, you can try to map the hotspots of Regional Functional Uniqueness, 
 ```{r}
 library(dplyr)
 
-# Compute Functional Uniqueness per site
 site_rich = rowSums(subset_pres[, -c(1:3)])
 names(site_rich) = subset_pres$GlobalID
 
 site_coords = subset_pres[, 1:3]
 
+# Function to get average index per site
+# and output a data.frame with site coords and average index
 make_index_df = function(mammal_funrar, index = "Ui") {
     species_index = mammal_funrar[[index]][[index]]
 
@@ -59,6 +51,7 @@ make_index_df = function(mammal_funrar, index = "Ui") {
     return(site_index)
 }
 
+# Compute Functional Uniqueness per site
 site_ui = make_index_df(mammal_funrar, "Ui")
 ```
 
@@ -91,7 +84,9 @@ ri_map = ggplot(site_ri, aes(x = Longitude, y = Latitude, z = site_Ri)) +
     ggthemes::theme_map() +
     theme(legend.position = c(0.1, 0.2)) +
     labs(fill = "Average Restrictedness") +
-    scale_fill_distiller(palette = "YlOrRd", direction = 1)
+    scale_fill_distiller(palette = "YlOrRd", direction = 1) +
+    borders(xlim = c(-170, -23), ylim = c(9.5,83), size = 0.01,
+            colour = "gray65")
 
 ri_map
 ```
@@ -123,61 +118,21 @@ di_map
 
 
 
-
-## Relation between IUCN status and Functional Rarity Indices
-
-
-### with Geographical Restrictedness
+## Total distribution of indices
 
 ```{r}
-species_status = mammal_funrar$Ui %>%
-    # Add IUCN status
-    inner_join(subset_iucn_status %>%
-                   dplyr::select(TaxonName, IUCN_status) %>%
-                   mutate(species = gsub(" ", "_", TaxonName)) %>%
-                   dplyr::select(-TaxonName),
-               by = "species") %>%
+species_indices = mammal_funrar$Ui %>%
     # Add Geographical Restrictedness
     inner_join(mammal_funrar$Ri, by = "species") %>%
-    mutate(IUCN_status = ifelse(is.na(IUCN_status), "NO",
-                                as.character(IUCN_status))) %>%
     mutate(std_Ui = (Ui - min(Ui))/(max(Ui) - min(Ui)))
 
-species_status$IUCN_status = factor(species_status$IUCN_status,
-                                    levels = names(status_values))
-
-summary(species_status)
+summary(species_indices)
 ```
-
-
-```{r}
-ggplot(species_status, aes(x = IUCN_status, y = Ri)) +
-    geom_boxplot(aes(fill = IUCN_status)) +
-    scale_fill_manual(values = status_values) +
-    labs(x = "IUCN Status",
-         y = "Geographical Restrictedness") +
-    theme(legend.position = "none")
-```
-
-### with Functional Uniqueness
-
-```{r}
-ggplot(species_status, aes(x = IUCN_status, y = std_Ui)) +
-    geom_boxplot(aes(fill = IUCN_status), outlier.colour = NA) +
-    geom_jitter(alpha = 0.5) +
-    scale_fill_manual(values = status_values) +
-    labs(x = "IUCN Status",
-         y = "Functional Uniqueness (scaled)") +
-    theme(legend.position = "none")
-```
-
-
-## Total distribution of indices
 
 ### Geographical Restrictedness
 
 ```{r}
-divr::make_quantile_density(species_status$Ri) +
+divr::make_quantile_density(species_indices$Ri) +
     labs(x = "Geographical Restrictedness",
          y = "Density",
          fill = NULL)
@@ -187,7 +142,7 @@ divr::make_quantile_density(species_status$Ri) +
 ### Functional Uniqueness
 
 ```{r}
-divr::make_quantile_density(species_status$Ui) +
+divr::make_quantile_density(species_indices$Ui) +
     labs(x = "Functional Uniqueness",
          y = "Density",
          fill = NULL) +
@@ -199,7 +154,7 @@ divr::make_quantile_density(species_status$Ui) +
 ### Biplot
 
 ```{r, fig.height=6.5, fig.width=7}
-biplot_ui_ri = ggplot(species_status, aes(x = std_Ui, y = Ri)) +
+biplot_ui_ri = ggplot(species_indices, aes(x = std_Ui, y = Ri)) +
     geom_point() +
     labs(x = "Functional Uniqueness",
          y = "Geographical Restrictedness",
@@ -210,7 +165,7 @@ biplot_ui_ri
 
 
 ```{r null_models_ui_ri, fig.height=6.5, fig.width=7}
-biplot_ui_ri_null = ggplot(species_status, aes(x = Ui, y = Ri)) +
+biplot_ui_ri_null = ggplot(species_indices, aes(x = Ui, y = Ri)) +
     geom_point(data = null_flat_ui, colour = "lightblue", alpha = 0.4) +
     geom_point() +
     geom_rug() +
@@ -220,19 +175,6 @@ biplot_ui_ri_null = ggplot(species_status, aes(x = Ui, y = Ri)) +
 
 biplot_ui_ri_null
 ```
-
-
-#### With IUCN status
-
-```{r, fig.height=6.5, fig.width=7}
-ggplot(species_status, aes(x = std_Ui, y = Ri, color = IUCN_status)) +
-    geom_point(size = 1.5, alpha = 0.8) +
-    scale_color_manual(values = status_values) +
-    labs(x = "Functional Uniqueness",
-         y = "Geographical Restrictedness",
-         title = "Species Regional Indices")
-```
-
 
 ### Functional Distinctiveness
 

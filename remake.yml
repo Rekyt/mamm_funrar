@@ -7,7 +7,7 @@ packages:
     - knitr
 
 sources:
-    - remake_scripts
+    - scripts
 
 targets:
     all:
@@ -18,10 +18,6 @@ targets:
     dryad_dataset:
         command: download_lawing_2015()
         packages: rdryad
-
-    shapefile_grid:
-        command: download_shapefile_grid()
-
 
     # Treat trait and presence-absence matrix
     raw_mammal_traits:
@@ -37,12 +33,6 @@ targets:
 
     subset_pres:
         command: get_common_species(raw_pres_mat, subset_traits)
-
-    subset_iucn_status:
-        command: get_iucn_status(subset_traits)
-        packages:
-            - taxize
-            - doParallel
 
     pres_matrix:
         command: format_presence_matrix(subset_pres)
@@ -75,26 +65,12 @@ targets:
     null_flat_ui:
         command: flatten_null_uniqueness(null_shuffled_traits, mammal_funrar)
 
-    # Make figures
-    background_grid:
-        command: get_spatial_grid("data/raw/Continent Shapefiles/NorthAmerica.shp")
-        depends: shapefile_grid
-
-    raster_grid:
-        command: rasterize_vector_grid(background_grid)
-
-    richness_map:
-        command: draw_richness_map(subset_pres)
-        packages: ggthemes
-
     # Make document
-
     results/exploratory_analysis.pdf:
         command: render("results/exploratory_analysis.Rmd", I("pdf_document"))
         depends:
             - mammal_funrar
             - subset_pres
-            - subset_iucn_status
             - null_shuffled_matrix
             - null_flat_ui
         packages: rmarkdown

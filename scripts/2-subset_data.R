@@ -22,25 +22,3 @@ get_common_species = function(pres_mat, trait_df) {
 
     return(pres_mat[, c(1:3, common_species)])
 }
-
-# Get IUCN statuses ------------------------------------------------------------
-
-get_iucn_status = function(trait_df) {
-
-    species_list = trait_df[["TaxonName"]]
-
-    registerDoParallel(cores = parallel::detectCores())
-
-    # For this function need to have defined a global option 'IUCN_REDLIST_KEY'
-    status = iucn_summary(as.character(species_list), parallel = T) %>%
-        iucn_status()
-
-    stopImplicitCluster()
-
-    # Add IUCN status column in trait df
-    trait_df_status = trait_df %>%
-        inner_join(data.frame(TaxonName = names(status), IUCN_status = status),
-                   by = "TaxonName")
-
-    return(trait_df_status)
-}

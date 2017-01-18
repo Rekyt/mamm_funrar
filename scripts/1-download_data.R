@@ -28,21 +28,3 @@ download_lawing_2015 = function() {
     # Clean Up Temporary File
     unlink(dryad_archive)
 }
-
-
-
-# Function download shapefile data ---------------------------------------------
-
-download_shapefile_grid = function() {
-    url = "http://mypage.iu.edu/~pdpolly/Data/Continent%20Shapefiles.zip"
-
-    shpfile = "data/raw/ContinentShapefiles.zip"
-
-    tempfile(shpfile)
-
-    curl::curl_download(url, shpfile)
-
-    unzip(shpfile, exdir = "data/raw")
-
-    unlink(shpfile)
-}
