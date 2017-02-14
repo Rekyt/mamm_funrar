@@ -151,7 +151,7 @@ divr::make_quantile_density(species_indices$Ui) +
 ```
 
 
-### Biplot
+### Functional Uniqueness and Geographical Restrictedness Biplot
 
 ```{r, fig.height=6.5, fig.width=7}
 biplot_ui_ri = ggplot(species_indices, aes(x = std_Ui, y = Ri)) +
@@ -242,6 +242,69 @@ ggplot(avg_di, aes(x = avg_Di, colour = type)) +
 ```
 
 
+### Functional Distinctiveness and other indices biplots
+
+```{r}
+species_all_ind = mammal_di %>%
+    funrar::matrix_to_stack("Di", "Site", "species") %>%
+    inner_join(species_indices, by = "species")
+```
+
+#### Functional Distinctiveness vs. Functional Uniqueness
+
+```{r}
+biplot_di_ui = ggplot(species_all_ind, aes(x = Di, y = std_Ui)) +
+    geom_point(alpha = 0.3) +
+    labs(x = "Functional Distinctiveness",
+         y = "Functional Uniqueness (scaled)",
+         title = "Species Functional Indices (local vs. regional)")
+
+biplot_di_ui
+```
+
+```{r}
+# Correlation test
+cor.test(species_all_ind$Di, species_all_ind$std_Ui, method =  "spearman")
+```
+
+```{r}
+# Linear model
+lm_di_ui = lm(std_Ui ~ Di, data = species_all_ind)
+summary(lm_di_ui)
+
+par(mfrow = c(2, 2))
+
+plot(lm_di_ui)
+```
+
+
+#### Functional Distinctiveness vs. Geographical Restrictedness
+
+```{r}
+biplot_di_ri = ggplot(species_all_ind, aes(x = Di, y = Ri)) +
+    geom_point(alpha = 0.3) +
+    labs(x = "Functional Distinctiveness",
+         y = "Functional Restrictedness")
+
+biplot_di_ri
+```
+
+```{r}
+# Correlation test
+cor.test(species_all_ind$Di, species_all_ind$Ri, method =  "spearman")
+```
+
+```{r}
+# Linear model
+lm_di_ri = lm(Ri ~ Di, data = species_all_ind)
+summary(lm_di_ri)
+
+par(mfrow = c(2, 2))
+
+plot(lm_di_ri)
+```
+
+## Latitudinal Gradients
 
 ### Functional Uniqueness
 
