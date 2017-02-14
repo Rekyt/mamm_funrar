@@ -195,10 +195,11 @@ divr::make_quantile_density(species_indices$Ui) +
 
 ```{r, fig.height=6.5, fig.width=7}
 biplot_ui_ri = ggplot(species_indices, aes(x = std_Ui, y = Ri)) +
-    geom_point() +
+    geom_point(alpha = 0.7) +
     labs(x = "Functional Uniqueness",
-         y = "Geographical Restrictedness",
-         title = "Species Regional Indices")
+         y = "Restrictedness",
+         title = "Species Regional Indices") +
+    ggthemes::theme_few()
 
 biplot_ui_ri
 ```
@@ -297,7 +298,8 @@ biplot_di_ui = ggplot(species_all_ind, aes(x = Di, y = std_Ui)) +
     geom_point(alpha = 0.3) +
     labs(x = "Functional Distinctiveness",
          y = "Functional Uniqueness (scaled)",
-         title = "Species Functional Indices (local vs. regional)")
+         title = "Species Functional Indices (local vs. regional)") +
+    ggthemes::theme_few()
 
 biplot_di_ui
 ```
@@ -324,7 +326,9 @@ plot(lm_di_ui)
 biplot_di_ri = ggplot(species_all_ind, aes(x = Di, y = Ri)) +
     geom_point(alpha = 0.3) +
     labs(x = "Functional Distinctiveness",
-         y = "Functional Restrictedness")
+         y = "Restrictedness",
+         title = "") +
+    ggthemes::theme_few()
 
 biplot_di_ri
 ```
