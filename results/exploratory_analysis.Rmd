@@ -28,11 +28,19 @@ names(site_rich) = subset_pres$GlobalID
 
 site_coords = subset_pres[, 1:3]
 
+scale_zero_one = function(x) {
+    (x - min(x))/diff(range(x))
+}
 # Function to get average index per site
 # and output a data.frame with site coords and average index
-make_index_df = function(mammal_funrar, index = "Ui") {
+make_index_df = function(mammal_funrar, index = "Ui", zero_one = FALSE) {
     species_index = mammal_funrar[[index]][[index]]
-
+    
+    # If we want to scale index between zero and one
+    if (zero_one) {
+        species_index = scale_zero_one(species_index) 
+    }
+    
     names(species_index) = mammal_funrar[[index]]$species
     
     index_name = paste0("site_", index)
@@ -53,6 +61,7 @@ make_index_df = function(mammal_funrar, index = "Ui") {
 
 # Compute Functional Uniqueness per site
 site_ui = make_index_df(mammal_funrar, "Ui")
+site_std_ui = make_index_df(mammal_funrar, "Ui", zero_one = TRUE)
 ```
 
 
@@ -68,7 +77,24 @@ ui_map = ggplot(site_ui, aes(x = Longitude, y = Latitude, z = site_Ui)) +
     borders(xlim = c(-170, -23), ylim = c(9.5,83), size = 0.01,
             colour = "gray65")
 
-ui_map
+```
+
+```{r}
+std_ui_map = ggplot(site_std_ui, aes(x = Longitude, y = Latitude, z = site_Ui)) +
+    stat_summary_2d(bins = 150, color = NA) +
+    coord_map("albers", at0 = 40, lat1 = 20, xlim = range(site_ui$Longitude),
+              ylim = range(site_ui$Latitude)) +
+    ggthemes::theme_map() +
+    theme(legend.position = c(0.1, 0.2)) +
+    labs(fill = "Average Uniqueness") +
+    scale_fill_distiller(palette = "YlOrRd", direction = 1) +
+    borders(xlim = c(-170, -23), ylim = c(9.5,83), size = 0.01,
+            colour = "gray65")
+
+```
+
+```{r, fig.height=8}
+cowplot::plot_grid(ui_map, std_ui_map, align = "hv", nrow = 2)
 ```
 
 
@@ -76,6 +102,7 @@ ui_map
 
 ```{r}
 site_ri = make_index_df(mammal_funrar, "Ri")
+site_std_ri = make_index_df(mammal_funrar, "Ri", zero_one = TRUE)
 
 ri_map = ggplot(site_ri, aes(x = Longitude, y = Latitude, z = site_Ri)) +
     stat_summary_2d(bins = 150, color = NA) +
@@ -88,7 +115,20 @@ ri_map = ggplot(site_ri, aes(x = Longitude, y = Latitude, z = site_Ri)) +
     borders(xlim = c(-170, -23), ylim = c(9.5,83), size = 0.01,
             colour = "gray65")
 
-ri_map
+std_ri_map = ggplot(site_std_ri, aes(x = Longitude, y = Latitude, z = site_Ri)) +
+    stat_summary_2d(bins = 150, color = NA) +
+    coord_map("albers", at0 = 40, lat1 = 20, xlim = range(site_ri$Longitude),
+              ylim = range(site_ri$Latitude)) +
+    ggthemes::theme_map() +
+    theme(legend.position = c(0.1, 0.2)) +
+    labs(fill = "Average Restrictedness") +
+    scale_fill_distiller(palette = "YlOrRd", direction = 1) +
+    borders(xlim = c(-170, -23), ylim = c(9.5,83), size = 0.01,
+            colour = "gray65")
+```
+
+```{r, fig.height=8}
+cowplot::plot_grid(ri_map, std_ri_map, align = "hv", nrow = 2)
 ```
 
 ### Functional Distinctiveness
