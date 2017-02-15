@@ -93,14 +93,16 @@ std_ui_map = ggplot(site_std_ui, aes(x = Longitude, y = Latitude, z = site_Ui)) 
 
 ```
 
-```{r, fig.height=8}
-cowplot::plot_grid(ui_map, std_ui_map, align = "hv", nrow = 2)
+```{r, fig.height=9}
+ui_grid = cowplot::plot_grid(ui_map, std_ui_map, align = "hv", nrow = 2)
+
+print(ui_grid)
 ```
 
 
 ### Geographical Restrictedness
 
-```{r}
+```{r, fig.height=9}
 site_ri = make_index_df(mammal_funrar, "Ri")
 site_std_ri = make_index_df(mammal_funrar, "Ri", zero_one = TRUE)
 
@@ -125,11 +127,11 @@ std_ri_map = ggplot(site_std_ri, aes(x = Longitude, y = Latitude, z = site_Ri)) 
     scale_fill_distiller(palette = "YlOrRd", direction = 1) +
     borders(xlim = c(-170, -23), ylim = c(9.5,83), size = 0.01,
             colour = "gray65")
+
+ri_grid = cowplot::plot_grid(ri_map, std_ri_map, align = "hv", nrow = 2)
+print(ri_grid)
 ```
 
-```{r, fig.height=8}
-cowplot::plot_grid(ri_map, std_ri_map, align = "hv", nrow = 2)
-```
 
 ### Functional Distinctiveness
 
