@@ -166,7 +166,7 @@ fr_map = make_site_map(site_fr, "std_FR", zero_one_limits = TRUE) +
 std_grid = cowplot::plot_grid(std_ui_map, std_ri_map, fr_map, nrow = 3,
                               labels = "AUTO")
 
-std_grid
+print(std_grid)
 ```
 
 
