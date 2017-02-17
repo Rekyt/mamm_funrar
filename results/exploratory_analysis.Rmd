@@ -58,16 +58,27 @@ make_index_df = function(mammal_funrar, index = "Ui", zero_one = FALSE) {
 
 
 # Function to make a site map with defined projections, etc. with given index per site
-make_site_map = function(site_df, index_name) {
-    ggplot(site_df, aes_string(x = "Longitude", y = "Latitude", z = index_name)) +
-    stat_summary_2d(bins = 150, color = NA) +
-    coord_map("albers", at0 = 40, lat1 = 20, xlim = range(site_df$Longitude),
-              ylim = range(site_df$Latitude)) +
-    ggthemes::theme_map() +
-    theme(legend.position = c(0.1, 0.2)) +
-    scale_fill_distiller(palette = "YlOrRd", direction = 1) +
-    borders(xlim = c(-170, -23), ylim = c(9.5,83), size = 0.01,
-            colour = "gray65")
+make_site_map = function(site_df, index_name, zero_one_limits = FALSE) {
+    index_map = ggplot(site_df, aes_string(x = "Longitude", y = "Latitude",
+                                           z = index_name)) +
+        stat_summary_2d(bins = 150, color = NA) +
+        coord_map("albers", at0 = 40, lat1 = 20,
+                  xlim = range(site_df$Longitude),
+                  ylim = range(site_df$Latitude)) +
+        ggthemes::theme_map() +
+        theme(legend.position = c(0.1, 0.2)) +
+        borders(xlim = c(-170, -23), ylim = c(9.5,83), size = 0.01,
+                colour = "gray65")
+    
+    if (!zero_one_limits) {
+        index_map = index_map +
+            scale_fill_distiller(palette = "YlOrRd", direction = 1)
+    } else {
+        index_map = index_map +
+            scale_fill_distiller(palette = "YlOrRd", direction = 1, limits = c(0, 1))
+    }
+    
+    return(index_map)
 }
 
 # Compute Functional Uniqueness per site
@@ -86,7 +97,7 @@ ui_map = make_site_map(site_ui, "site_Ui") +
 ```
 
 ```{r}
-std_ui_map = make_site_map(site_std_ui, "site_Ui") +
+std_ui_map = make_site_map(site_std_ui, "site_Ui", zero_one_limits = TRUE) +
     labs(fill = "Average Standardized\nUniqueness")
 ```
 
@@ -108,7 +119,7 @@ site_std_ri = make_index_df(mammal_funrar, "Ri", zero_one = TRUE) %>%
 ri_map = make_site_map(site_ri, "site_Ri") +
     labs(fill = "Average Restrictedness")
 
-std_ri_map = make_site_map(site_std_ri, "site_Ri") +
+std_ri_map = make_site_map(site_std_ri, "site_Ri", zero_one_limits = TRUE) +
     labs(fill = "Average Standardized\n Restrictedness")
 
 ri_grid = cowplot::plot_grid(ri_map, std_ri_map, align = "hv", nrow = 2)
@@ -145,14 +156,14 @@ site_fr = site_ui %>%
     mutate(FR = (std_Ui + std_Ri)/2,
            std_FR = divr::scale_zero_one(FR))
 
-fr_map = make_site_map(site_fr, "std_FR") +
+fr_map = make_site_map(site_fr, "std_FR", zero_one_limits = TRUE) +
     labs(fill = "Average Functional\nRarity")
 ```
 
 #### Full comparison
 
 ```{r, fig.height=12}
-std_grid = cowplot::plot_grid(std_ri_map, std_ui_map, fr_map, nrow = 3,
+std_grid = cowplot::plot_grid(std_ui_map, std_ri_map, fr_map, nrow = 3,
                               labels = "AUTO")
 
 std_grid
