@@ -28,9 +28,6 @@ names(site_rich) = subset_pres$GlobalID
 
 site_coords = subset_pres[, 1:3]
 
-scale_zero_one = function(x) {
-    (x - min(x))/diff(range(x))
-}
 # Function to get average index per site
 # and output a data.frame with site coords and average index
 make_index_df = function(mammal_funrar, index = "Ui", zero_one = FALSE) {
@@ -38,7 +35,7 @@ make_index_df = function(mammal_funrar, index = "Ui", zero_one = FALSE) {
     
     # If we want to scale index between zero and one
     if (zero_one) {
-        species_index = scale_zero_one(species_index) 
+        species_index = divr::scale_zero_one(species_index) 
     }
     
     names(species_index) = mammal_funrar[[index]]$species
@@ -59,38 +56,38 @@ make_index_df = function(mammal_funrar, index = "Ui", zero_one = FALSE) {
     return(site_index)
 }
 
+
+# Function to make a site map with defined projections, etc. with given index per site
+make_site_map = function(site_df, index_name) {
+    ggplot(site_df, aes_string(x = "Longitude", y = "Latitude", z = index_name)) +
+    stat_summary_2d(bins = 150, color = NA) +
+    coord_map("albers", at0 = 40, lat1 = 20, xlim = range(site_df$Longitude),
+              ylim = range(site_df$Latitude)) +
+    ggthemes::theme_map() +
+    theme(legend.position = c(0.1, 0.2)) +
+    scale_fill_distiller(palette = "YlOrRd", direction = 1) +
+    borders(xlim = c(-170, -23), ylim = c(9.5,83), size = 0.01,
+            colour = "gray65")
+}
+
 # Compute Functional Uniqueness per site
-site_ui = make_index_df(mammal_funrar, "Ui")
-site_std_ui = make_index_df(mammal_funrar, "Ui", zero_one = TRUE)
+# Then compute a scaled version of Ui
+site_ui = make_index_df(mammal_funrar, "Ui") %>%
+    mutate(std_Ui = divr::scale_zero_one(site_Ui))
+
+site_std_ui = make_index_df(mammal_funrar, "Ui", zero_one = TRUE) %>%
+    mutate(std_Ui = divr::scale_zero_one(site_Ui))
 ```
 
 
 ```{r}
-ui_map = ggplot(site_ui, aes(x = Longitude, y = Latitude, z = site_Ui)) +
-    stat_summary_2d(bins = 150, color = NA) +
-    coord_map("albers", at0 = 40, lat1 = 20, xlim = range(site_ui$Longitude),
-              ylim = range(site_ui$Latitude)) +
-    ggthemes::theme_map() +
-    theme(legend.position = c(0.1, 0.2)) +
-    labs(fill = "Average Uniqueness") +
-    scale_fill_distiller(palette = "YlOrRd", direction = 1) +
-    borders(xlim = c(-170, -23), ylim = c(9.5,83), size = 0.01,
-            colour = "gray65")
-
+ui_map = make_site_map(site_ui, "site_Ui") +
+    labs(fill = "Average Uniqueness")
 ```
 
 ```{r}
-std_ui_map = ggplot(site_std_ui, aes(x = Longitude, y = Latitude, z = site_Ui)) +
-    stat_summary_2d(bins = 150, color = NA) +
-    coord_map("albers", at0 = 40, lat1 = 20, xlim = range(site_ui$Longitude),
-              ylim = range(site_ui$Latitude)) +
-    ggthemes::theme_map() +
-    theme(legend.position = c(0.1, 0.2)) +
-    labs(fill = "Average Uniqueness") +
-    scale_fill_distiller(palette = "YlOrRd", direction = 1) +
-    borders(xlim = c(-170, -23), ylim = c(9.5,83), size = 0.01,
-            colour = "gray65")
-
+std_ui_map = make_site_map(site_std_ui, "site_Ui") +
+    labs(fill = "Average Standardized\nUniqueness")
 ```
 
 ```{r, fig.height=9}
@@ -103,30 +100,16 @@ print(ui_grid)
 ### Geographical Restrictedness
 
 ```{r, fig.height=9}
-site_ri = make_index_df(mammal_funrar, "Ri")
-site_std_ri = make_index_df(mammal_funrar, "Ri", zero_one = TRUE)
+site_ri = make_index_df(mammal_funrar, "Ri") %>%
+    mutate(std_Ri = divr::scale_zero_one(site_Ri))
+site_std_ri = make_index_df(mammal_funrar, "Ri", zero_one = TRUE) %>%
+    mutate(std_Ri = divr::scale_zero_one(site_Ri))
 
-ri_map = ggplot(site_ri, aes(x = Longitude, y = Latitude, z = site_Ri)) +
-    stat_summary_2d(bins = 150, color = NA) +
-    coord_map("albers", at0 = 40, lat1 = 20, xlim = range(site_ri$Longitude),
-              ylim = range(site_ri$Latitude)) +
-    ggthemes::theme_map() +
-    theme(legend.position = c(0.1, 0.2)) +
-    labs(fill = "Average Restrictedness") +
-    scale_fill_distiller(palette = "YlOrRd", direction = 1) +
-    borders(xlim = c(-170, -23), ylim = c(9.5,83), size = 0.01,
-            colour = "gray65")
+ri_map = make_site_map(site_ri, "site_Ri") +
+    labs(fill = "Average Restrictedness")
 
-std_ri_map = ggplot(site_std_ri, aes(x = Longitude, y = Latitude, z = site_Ri)) +
-    stat_summary_2d(bins = 150, color = NA) +
-    coord_map("albers", at0 = 40, lat1 = 20, xlim = range(site_ri$Longitude),
-              ylim = range(site_ri$Latitude)) +
-    ggthemes::theme_map() +
-    theme(legend.position = c(0.1, 0.2)) +
-    labs(fill = "Average Restrictedness") +
-    scale_fill_distiller(palette = "YlOrRd", direction = 1) +
-    borders(xlim = c(-170, -23), ylim = c(9.5,83), size = 0.01,
-            colour = "gray65")
+std_ri_map = make_site_map(site_std_ri, "site_Ri") +
+    labs(fill = "Average Standardized\n Restrictedness")
 
 ri_grid = cowplot::plot_grid(ri_map, std_ri_map, align = "hv", nrow = 2)
 print(ri_grid)
@@ -146,18 +129,34 @@ site_di = rowMeans(as.matrix(mammal_funrar$Di), na.rm = T) %>%
                    mutate(GlobalID = as.character(GlobalID)),
                by = "GlobalID")
 
-di_map = ggplot(site_di, aes(x = Longitude, y = Latitude, z = avg_Di)) +
-    stat_summary_2d(bins = 150, color = NA) +
-    coord_map("albers", at0 = 40, lat1 = 20, xlim = range(site_di$Longitude),
-              ylim = range(site_di$Latitude)) +
-    ggthemes::theme_map() +
-    theme(legend.position = c(0.1, 0.2)) +
-    labs(fill = "Average Distinctiveness per site") +
-    scale_fill_distiller(palette = "YlOrRd", direction = 1)
+di_map = make_site_map(site_di, "avg_Di") +
+    labs(fill = "Average Distinctiveness per site")
 
 di_map
 ```
 
+
+
+### Functional Rarity $(U_i + R_i)/2$
+
+```{r}
+site_fr = site_ui %>%
+    inner_join(site_ri, by = c("GlobalID", "Longitude", "Latitude")) %>%
+    mutate(FR = (std_Ui + std_Ri)/2,
+           std_FR = divr::scale_zero_one(FR))
+
+fr_map = make_site_map(site_fr, "std_FR") +
+    labs(fill = "Average Functional\nRarity")
+```
+
+#### Full comparison
+
+```{r, fig.height=12}
+std_grid = cowplot::plot_grid(std_ri_map, std_ui_map, fr_map, nrow = 3,
+                              labels = "AUTO")
+
+std_grid
+```
 
 
 ## Total distribution of indices
@@ -166,7 +165,8 @@ di_map
 species_indices = mammal_funrar$Ui %>%
     # Add Geographical Restrictedness
     inner_join(mammal_funrar$Ri, by = "species") %>%
-    mutate(std_Ui = (Ui - min(Ui))/(max(Ui) - min(Ui)))
+    mutate(std_Ui = (Ui - min(Ui))/(max(Ui) - min(Ui)),
+           std_Ri = (Ri - min(Ri))/(max(Ri) - min(Ri)))
 
 summary(species_indices)
 ```
@@ -196,14 +196,18 @@ divr::make_quantile_density(species_indices$Ui) +
 ### Functional Uniqueness and Geographical Restrictedness Biplot
 
 ```{r, fig.height=6.5, fig.width=7}
-biplot_ui_ri = ggplot(species_indices, aes(x = std_Ui, y = Ri)) +
+castor = filter(species_indices, std_Ui > 0.75, std_Ri < 0.25)
+
+biplot_ui_ri = ggplot(species_indices, aes(x = std_Ui, y = std_Ri)) +
     geom_point(alpha = 0.7) +
+    geom_point(data = castor, colour = "red") +
+    geom_text(data = castor, label = "C. canadensis", vjust = 1.2, hjust = 1,
+              fontface = "italic") +
     labs(x = "Functional Uniqueness",
-         y = "Restrictedness",
-         title = "Species Regional Indices") +
+         y = "Restrictedness") +
     ggthemes::theme_few()
 
-biplot_ui_ri
+ggExtra::ggMarginal(biplot_ui_ri)
 ```
 
 
