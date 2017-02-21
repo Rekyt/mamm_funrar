@@ -98,7 +98,7 @@ ui_map = make_site_map(site_ui, "site_Ui") +
 
 ```{r}
 std_ui_map = make_site_map(site_std_ui, "site_Ui", zero_one_limits = TRUE) +
-    labs(fill = "Average Standardized\nUniqueness")
+    labs(fill = "Average Standardized\nUniqueness\n")
 ```
 
 ```{r, fig.height=9}
@@ -117,10 +117,10 @@ site_std_ri = make_index_df(mammal_funrar, "Ri", zero_one = TRUE) %>%
     mutate(std_Ri = divr::scale_zero_one(site_Ri))
 
 ri_map = make_site_map(site_ri, "site_Ri") +
-    labs(fill = "Average Restrictedness")
+    labs(fill = "Average Restrictedness\n")
 
 std_ri_map = make_site_map(site_std_ri, "site_Ri", zero_one_limits = TRUE) +
-    labs(fill = "Average Standardized\n Restrictedness")
+    labs(fill = "Average Standardized\n Restrictedness\n")
 
 ri_grid = cowplot::plot_grid(ri_map, std_ri_map, align = "hv", nrow = 2)
 print(ri_grid)
@@ -141,7 +141,7 @@ site_di = rowMeans(as.matrix(mammal_funrar$Di), na.rm = T) %>%
                by = "GlobalID")
 
 di_map = make_site_map(site_di, "avg_Di") +
-    labs(fill = "Average Distinctiveness per site")
+    labs(fill = "Average Distinctiveness per site\n")
 
 di_map
 ```
@@ -157,7 +157,7 @@ site_fr = site_ui %>%
            std_FR = divr::scale_zero_one(FR))
 
 fr_map = make_site_map(site_fr, "std_FR", zero_one_limits = TRUE) +
-    labs(fill = "Average Functional\nRarity")
+    labs(fill = "Average Functional\nRarity\n")
 ```
 
 #### Full comparison
