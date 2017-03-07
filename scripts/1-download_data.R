@@ -4,7 +4,7 @@ download_lawing_2015 = function() {
     # Get the handle to download the data from Dryad
     dryad_handle = "10255/dryad.116171"
 
-    dryad_dir = paste0("data/raw/", strsplit(dryad_handle, "/", fixed = T)[[1]][2],
+    dryad_dir = paste0("data/", strsplit(dryad_handle, "/", fixed = T)[[1]][2],
                        "/")
 
 

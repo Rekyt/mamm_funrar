@@ -17,7 +17,32 @@ This repository contains a worked through example of the use of [`funrar`R packa
 
 The dataset is available through Dryad there: [doi:10.5061/dryad.9t0n8](https://doi.org/10.5061/dryad.9t0n8).
 
-The repository is self-contained and can be used to automatically download [see How to run section](How to run) and compute the figures shown in the submitted manuscript.
+The repository is self-contained and can be used to automatically download [see How to run section](#how-to-run) and compute the figures shown in the submitted manuscript.
+
+
+
+## How to run
+
+To run the analysis on your computer, install `remake` ([see Dependencies section](#dependencies)), move to the project directory and run:
+
+```
+remake::make()
+```
+
+You will see the full analysis run on your computer, it can take as long as 15 minutes to run. And you will need to be connected to the internet at least to download the primary data files.
+With remake all the intermediate objects are viewable on a dependency graph:
+
+```{r}
+remake::diagram()
+```
+
+## Organization
+
+The repository is organized with the `scripts` folder which contains R files to run the analysis. Each R file contains functions used in the `remake.yml` file for each step of the analysis.
+
+The `results` folder contains the `exploratory_analysis.Rmd` file which sums up the results and plot graphs based on the computation done when running the scripts.
+
+The `data` folder is created when downloading the datafiles.
 
 ## Dependencies
 
@@ -39,22 +64,5 @@ The analysis ran using the following system and packages:
 ```{r}
 devtools::session_info()
 ```
-
-
-## How to run
-
-To run the analysis on your computer, install `remake` (see above), move to the project directory and run:
-
-```
-remake::make()
-```
-
-You will see the full analysis run on your computer, it can take as long as 30 minutes to run.
-With remake all the intermediate objects are viewable on a dependency graph:
-
-```{r}
-remake::diagram()
-```
-
 
 ## References

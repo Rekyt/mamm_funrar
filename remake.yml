@@ -17,11 +17,11 @@ targets:
 
     # Treat trait and presence-absence matrix
     raw_mammal_traits:
-        command: read.csv("data/raw/dryad.116171/DryadArchive/Traits.csv")
+        command: read.csv("data/dryad.116171/DryadArchive/Traits.csv")
         depends: dryad_dataset
 
     raw_pres_mat:
-        command: read.csv("data/raw/dryad.116171/DryadArchive/PresAbsMatrix50.csv")
+        command: read.csv("data/dryad.116171/DryadArchive/PresAbsMatrix50.csv")
         depends: dryad_dataset
 
     subset_traits:
@@ -47,28 +47,12 @@ targets:
             - funrar
             - Matrix
 
-    null_shuffled_matrix:
-        command: compute_null_funrar(pres_matrix, dist_matrix)
-        packages:
-            - funrar
-            - vegan
-
-    null_shuffled_traits:
-        command: compute_null_traits(pres_matrix, trait_df)
-        packages:
-            - funrar
-
-    null_flat_ui:
-        command: flatten_null_uniqueness(null_shuffled_traits, mammal_funrar)
-
     # Make document
     results/exploratory_analysis.pdf:
         command: render("results/exploratory_analysis.Rmd", I("pdf_document"))
         depends:
             - mammal_funrar
             - subset_pres
-            - null_shuffled_matrix
-            - null_flat_ui
         packages: rmarkdown
 
     # Final run

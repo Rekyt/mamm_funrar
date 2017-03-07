@@ -20,12 +20,14 @@ For example, you can try to map the hotspots of Regional Functional Uniqueness, 
 
 ### Functional Uniqueness
 
-```{r}
+```{r map_functions}
 library(dplyr)
 
+# Site richness data.frame
 site_rich = rowSums(subset_pres[, -c(1:3)])
 names(site_rich) = subset_pres$GlobalID
 
+# Get names and coordinates of each site
 site_coords = subset_pres[, 1:3]
 
 # Function to get average index per site
@@ -57,9 +59,11 @@ make_index_df = function(mammal_funrar, index = "Ui", zero_one = FALSE) {
 }
 
 
-# Function to make a site map with defined projections, etc. with given index per site
+# Function to make a site map with defined projections and format
+# with given index per site
 make_site_map = function(site_df, index_name, zero_one_limits = FALSE) {
-    index_map = ggplot(site_df, aes_string(x = "Longitude", y = "Latitude",
+    index_map = ggplot(site_df, aes_string(x = "Longitude",
+                                           y = "Latitude",
                                            z = index_name)) +
         stat_summary_2d(bins = 150, color = NA) +
         coord_map("albers", at0 = 40, lat1 = 20,
@@ -74,13 +78,17 @@ make_site_map = function(site_df, index_name, zero_one_limits = FALSE) {
         index_map = index_map +
             scale_fill_distiller(palette = "YlOrRd", direction = 1)
     } else {
+        # Scale fill bar between 0 and 1
         index_map = index_map +
-            scale_fill_distiller(palette = "YlOrRd", direction = 1, limits = c(0, 1))
+            scale_fill_distiller(palette = "YlOrRd", direction = 1,
+                                 limits = c(0, 1))
     }
     
     return(index_map)
 }
+```
 
+```{r uniqueness_maps, fig.height=7.5}
 # Compute Functional Uniqueness per site
 # Then compute a scaled version of Ui
 site_ui = make_index_df(mammal_funrar, "Ui") %>%
@@ -88,20 +96,16 @@ site_ui = make_index_df(mammal_funrar, "Ui") %>%
 
 site_std_ui = make_index_df(mammal_funrar, "Ui", zero_one = TRUE) %>%
     mutate(std_Ui = divr::scale_zero_one(site_Ui))
-```
 
-
-```{r}
+# Raw uniqueness
 ui_map = make_site_map(site_ui, "site_Ui") +
     labs(fill = "Average Uniqueness")
-```
 
-```{r}
-std_ui_map = make_site_map(site_std_ui, "site_Ui", zero_one_limits = TRUE) +
+# Scaled Uniqueness between zero and one
+std_ui_map = make_site_map(site_std_ui, "site_Ui",
+                           zero_one_limits = TRUE) +
     labs(fill = "Average Standardized\nUniqueness\n")
-```
 
-```{r, fig.height=9}
 ui_grid = cowplot::plot_grid(ui_map, std_ui_map, align = "hv", nrow = 2)
 
 print(ui_grid)
@@ -110,7 +114,7 @@ print(ui_grid)
 
 ### Geographical Restrictedness
 
-```{r, fig.height=9}
+```{r restrictedness_maps, fig.height=7.5}
 site_ri = make_index_df(mammal_funrar, "Ri") %>%
     mutate(std_Ri = divr::scale_zero_one(site_Ri))
 site_std_ri = make_index_df(mammal_funrar, "Ri", zero_one = TRUE) %>%
@@ -129,7 +133,7 @@ print(ri_grid)
 
 ### Functional Distinctiveness
 
-```{r}
+```{r distinctiveness_map}
 # Average Functional Distinctiveness
 site_di = rowMeans(as.matrix(mammal_funrar$Di), na.rm = T) %>%
     as_data_frame() %>%
@@ -150,7 +154,7 @@ di_map
 
 ### Functional Rarity $(U_i + R_i)/2$
 
-```{r}
+```{r functional_rarity_map}
 site_fr = site_ui %>%
     inner_join(site_ri, by = c("GlobalID", "Longitude", "Latitude")) %>%
     mutate(FR = (std_Ui + std_Ri)/2,
@@ -162,7 +166,7 @@ fr_map = make_site_map(site_fr, "std_FR", zero_one_limits = TRUE) +
 
 #### Full comparison
 
-```{r, fig.height=12}
+```{r full_map_grid, fig.height=12}
 std_grid = cowplot::plot_grid(std_ui_map, std_ri_map, fr_map, nrow = 3,
                               labels = "AUTO")
 
@@ -172,7 +176,7 @@ print(std_grid)
 
 ## Total distribution of indices
 
-```{r}
+```{r all_species_indices}
 species_indices = mammal_funrar$Ui %>%
     # Add Geographical Restrictedness
     inner_join(mammal_funrar$Ri, by = "species") %>%
@@ -184,7 +188,7 @@ summary(species_indices)
 
 ### Geographical Restrictedness
 
-```{r}
+```{r restrictedness_density}
 divr::make_quantile_density(species_indices$Ri) +
     labs(x = "Geographical Restrictedness",
          y = "Density",
@@ -194,25 +198,25 @@ divr::make_quantile_density(species_indices$Ri) +
 
 ### Functional Uniqueness
 
-```{r}
+```{r uniqueness_density}
 divr::make_quantile_density(species_indices$Ui) +
     labs(x = "Functional Uniqueness",
          y = "Density",
-         fill = NULL) +
-    geom_density(data = null_flat_ui, aes(x = Ui, y = ..density..),
-                 color = "cornflowerblue", size = 0.5, show.legend = FALSE)
+         fill = NULL)
 ```
 
 
 ### Functional Uniqueness and Geographical Restrictedness Biplot
 
-```{r, fig.height=6.5, fig.width=7}
+```{r ui_ri_biplot, fig.height=6.5, fig.width=7}
+# Annotate specifally castor point
 castor = filter(species_indices, std_Ui > 0.75, std_Ri < 0.25)
 
 biplot_ui_ri = ggplot(species_indices, aes(x = std_Ui, y = std_Ri)) +
     geom_point(alpha = 0.7) +
     geom_point(data = castor, colour = "red") +
-    geom_text(data = castor, label = "C. canadensis", vjust = 1.2, hjust = 1,
+    geom_text(data = castor, label = "C. canadensis", vjust = 1.2,
+              hjust = 1,
               fontface = "italic") +
     labs(x = "Functional Uniqueness",
          y = "Restrictedness") +
@@ -221,24 +225,11 @@ biplot_ui_ri = ggplot(species_indices, aes(x = std_Ui, y = std_Ri)) +
 ggExtra::ggMarginal(biplot_ui_ri)
 ```
 
-
-```{r null_models_ui_ri, fig.height=6.5, fig.width=7}
-biplot_ui_ri_null = ggplot(species_indices, aes(x = Ui, y = Ri)) +
-    geom_point(data = null_flat_ui, colour = "lightblue", alpha = 0.4) +
-    geom_point() +
-    geom_rug() +
-    labs(x = "Functional Uniqueness",
-         y = "Geographical Restrictedness",
-         title = "Species Regional Indices with null model (shuffled traits)")
-
-biplot_ui_ri_null
-```
-
 ### Functional Distinctiveness
 
 #### For each site-species combination
 
-```{r}
+```{r distinctiveness_density}
 mammal_di = as.matrix(mammal_funrar$Di)
 
 only_di = mammal_di[!is.na(mammal_di)]
@@ -251,28 +242,9 @@ dens_di = divr::make_quantile_density(only_di) +
 dens_di
 ```
 
-```{r}
-null_di = null_shuffled_matrix %>%
-    lapply(as.matrix) %>%
-    purrr::map(~.x[!is.na(.x)]) %>%
-    purrr::map(~data.frame(Di = .x) %>%
-                   mutate(type = "null"))
-
-all_di = data.frame(Di = only_di) %>%
-    mutate(type = "observed") %>%
-    bind_rows(null_di)
-
-
-ggplot(all_di, aes(x = Di, colour = type)) +
-    geom_density() +
-    labs(x     = "Functional Distinctiveness",
-         y     = "Density",
-         title = "Site-Species Di Density with null model")
-```
-
 #### Average Distinctiveness of a species across all sites
 
-```{r}
+```{r avg_di_density}
 dens_avg_di = divr::make_quantile_density(colMeans(mammal_di, na.rm = TRUE)) +
     labs(x = "Species Average Functional Distinctiveness",
          y = "Density",
@@ -281,28 +253,10 @@ dens_avg_di = divr::make_quantile_density(colMeans(mammal_di, na.rm = TRUE)) +
 dens_avg_di
 ```
 
-```{r}
-null_avg_di = null_shuffled_matrix %>%
-    lapply(as.matrix) %>%
-    lapply(colMeans, na.rm = TRUE) %>%
-    purrr::map(~data.frame(avg_Di = .x) %>%
-                   mutate(type = "null"))
-
-avg_di = data.frame(avg_Di = colMeans(mammal_di, na.rm = TRUE),
-                    type = "observed") %>%
-    bind_rows(null_avg_di)
-
-ggplot(avg_di, aes(x = avg_Di, colour = type)) +
-    geom_density() +
-    labs(x     = "Average Distinctiveness across all Sites",
-         y     = "Density",
-         title = "Average Species Di Density with null model")
-```
-
 
 ### Functional Distinctiveness and other indices biplots
 
-```{r}
+```{r species_di_other_indices}
 species_all_ind = mammal_di %>%
     funrar::matrix_to_stack("Di", "Site", "species") %>%
     inner_join(species_indices, by = "species")
@@ -310,7 +264,7 @@ species_all_ind = mammal_di %>%
 
 #### Functional Distinctiveness vs. Functional Uniqueness
 
-```{r}
+```{r di_ui_biplot}
 biplot_di_ui = ggplot(species_all_ind, aes(x = Di, y = std_Ui)) +
     geom_point(alpha = 0.3) +
     labs(x = "Functional Distinctiveness",
@@ -326,7 +280,7 @@ biplot_di_ui
 cor.test(species_all_ind$Di, species_all_ind$std_Ui, method =  "spearman")
 ```
 
-```{r}
+```{r lm_di_ui_plot}
 # Linear model
 lm_di_ui = lm(std_Ui ~ Di, data = species_all_ind)
 summary(lm_di_ui)
@@ -339,7 +293,7 @@ plot(lm_di_ui)
 
 #### Functional Distinctiveness vs. Geographical Restrictedness
 
-```{r}
+```{r di_ri_biplot}
 biplot_di_ri = ggplot(species_all_ind, aes(x = Di, y = Ri)) +
     geom_point(alpha = 0.3) +
     labs(x = "Functional Distinctiveness",
@@ -355,7 +309,7 @@ biplot_di_ri
 cor.test(species_all_ind$Di, species_all_ind$Ri, method =  "spearman")
 ```
 
-```{r}
+```{r lm_di_ri_plot}
 # Linear model
 lm_di_ri = lm(Ri ~ Di, data = species_all_ind)
 summary(lm_di_ri)
@@ -365,11 +319,12 @@ par(mfrow = c(2, 2))
 plot(lm_di_ri)
 ```
 
+
 ## Latitudinal Gradients
 
 ### Functional Uniqueness
 
-```{r}
+```{r uniqueness_gradient}
 latitudinal_ui = ggplot(site_ui, aes(x = Latitude, y = site_Ui)) +
     geom_point(alpha = 0.3, color = "darkblue") +
     geom_smooth() +
@@ -380,10 +335,9 @@ latitudinal_ui = ggplot(site_ui, aes(x = Latitude, y = site_Ui)) +
 latitudinal_ui
 ```
 
-
 ### Geographical Restrictedness
 
-```{r}
+```{r restrictedness_gradient}
 latitudinal_ri = ggplot(site_ri, aes(x = Latitude, y = site_Ri)) +
     geom_point(alpha = 0.3, color = "darkblue") +
     geom_smooth() +
@@ -395,10 +349,9 @@ latitudinal_ri = ggplot(site_ri, aes(x = Latitude, y = site_Ri)) +
 latitudinal_ri
 ```
 
-
 ### Functional Distinctiveness
 
-```{r}
+```{r distinctiveness_gradient}
 latitudinal_di = ggplot(site_di, aes(x = Latitude, y = avg_Di)) +
     geom_point(alpha = 0.3, color = "darkblue") +
     geom_smooth() +
