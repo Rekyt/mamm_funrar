@@ -19,7 +19,7 @@ To run the analysis on your computer, install `remake` ([see Dependencies sectio
 
     remake::make()
 
-You will see the full analysis run on your computer, it can take as long as 30 minutes to run. With remake all the intermediate objects are viewable on a dependency graph:
+You will see the full analysis run on your computer, it can take as long as 15 minutes to run. And you will need to be connected to the internet at least to download the primary data files. With remake all the intermediate objects are viewable on a dependency graph:
 
 ``` r
 remake::diagram()
