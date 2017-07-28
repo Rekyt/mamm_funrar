@@ -193,7 +193,7 @@ summary(species_indices)
 ### Geographical Restrictedness
 
 ```{r restrictedness_density}
-make_quantile_density(species_indices$Ri) +
+divr::make_quantile_density(species_indices$Ri) +
     labs(x = "Geographical Restrictedness",
          y = "Density",
          fill = NULL)
@@ -203,7 +203,7 @@ make_quantile_density(species_indices$Ri) +
 ### Functional Uniqueness
 
 ```{r uniqueness_density}
-make_quantile_density(species_indices$Ui) +
+divr::make_quantile_density(species_indices$Ui) +
     labs(x = "Functional Uniqueness",
          y = "Density",
          fill = NULL)
@@ -238,7 +238,7 @@ mammal_di = as.matrix(mammal_funrar$Di)
 
 only_di = mammal_di[!is.na(mammal_di)]
 
-dens_di = make_quantile_density(only_di) +
+dens_di = divr::make_quantile_density(only_di) +
     labs(x     = "Functional Distinctiveness",
          y     = "Density",
          fill  = NULL,
@@ -249,7 +249,7 @@ dens_di
 #### Average Distinctiveness of a species across all sites
 
 ```{r avg_di_density}
-dens_avg_di = make_quantile_density(colMeans(mammal_di, na.rm = TRUE)) +
+dens_avg_di = divr::make_quantile_density(colMeans(mammal_di, na.rm = TRUE)) +
     labs(x = "Species Average Functional Distinctiveness",
          y = "Density",
          fill = NULL)
