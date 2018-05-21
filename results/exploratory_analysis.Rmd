@@ -37,7 +37,7 @@ make_index_df = function(mammal_funrar, index = "Ui", zero_one = FALSE) {
     
     # If we want to scale index between zero and one
     if (zero_one) {
-        species_index = divr::scale_zero_one(species_index) 
+        species_index = scale_zero_one(species_index) 
     }
     
     names(species_index) = mammal_funrar[[index]]$species
@@ -86,16 +86,20 @@ make_site_map = function(site_df, index_name, zero_one_limits = FALSE) {
     
     return(index_map)
 }
+
+scale_zero_one = function(vec) {
+    return( (vec - min(vec))/diff(range(vec)))
+}
 ```
 
 ```{r uniqueness_maps, fig.height=7.5}
 # Compute Functional Uniqueness per site
 # Then compute a scaled version of Ui
 site_ui = make_index_df(mammal_funrar, "Ui") %>%
-    mutate(std_Ui = divr::scale_zero_one(site_Ui))
+    mutate(std_Ui = scale_zero_one(site_Ui))
 
 site_std_ui = make_index_df(mammal_funrar, "Ui", zero_one = TRUE) %>%
-    mutate(std_Ui = divr::scale_zero_one(site_Ui))
+    mutate(std_Ui = scale_zero_one(site_Ui))
 
 # Raw uniqueness
 ui_map = make_site_map(site_ui, "site_Ui") +
@@ -116,9 +120,9 @@ print(ui_grid)
 
 ```{r restrictedness_maps, fig.height=7.5}
 site_ri = make_index_df(mammal_funrar, "Ri") %>%
-    mutate(std_Ri = divr::scale_zero_one(site_Ri))
+    mutate(std_Ri = scale_zero_one(site_Ri))
 site_std_ri = make_index_df(mammal_funrar, "Ri", zero_one = TRUE) %>%
-    mutate(std_Ri = divr::scale_zero_one(site_Ri))
+    mutate(std_Ri = scale_zero_one(site_Ri))
 
 ri_map = make_site_map(site_ri, "site_Ri") +
     labs(fill = "Average Restrictedness\n")
@@ -158,7 +162,7 @@ di_map
 site_fr = site_ui %>%
     inner_join(site_ri, by = c("GlobalID", "Longitude", "Latitude")) %>%
     mutate(FR = (std_Ui + std_Ri)/2,
-           std_FR = divr::scale_zero_one(FR))
+           std_FR = scale_zero_one(FR))
 
 fr_map = make_site_map(site_fr, "std_FR", zero_one_limits = TRUE) +
     labs(fill = "Average Functional\nRarity\n")
