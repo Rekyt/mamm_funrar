@@ -1,0 +1,87 @@
+---
+title: "How to compute functional rarity indices using `funrar`"
+author: "Matthias Grenié"
+date: "21 mai 2018"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This document aims to guide you through the use of `funrar` to compute functional rarity indices.
+Before running the analysis be sure to install the different packages and download the needed datasets by running the following chunk:
+
+```{r, eval = FALSE}
+install.packages(c("funrar", "rdryad", "ggplot2"))
+
+```
+
+## Load Data
+
+```{r}
+dryad_archive = "lawning_data.zip"
+
+# Create a temporary file
+tempfile(dryad_archive)
+
+# Download file
+dryad_fetch(download_url(handle = dryad_handle), destfile = dryad_archive,
+            mode = "wb")
+
+# Extract archive
+unzip(dryad_archive, exdir = substr(dryad_dir, 1, nchar(dryad_dir) - 1))
+
+# Clean Up Temporary File
+unlink(dryad_archive)
+```
+
+
+Trait data, site-species
+
+## Compute distance matrix
+
+Scale traits first
+
+Gower's distance, Euclidean distance (continuous triaits, etc.)
+
+`compute_dist_matrix()`
+
+`ade4::dist.ktab()`
+
+
+Need to scale
+
+*NOTE:* 
+
+## Compute rarity indices
+
+### Notes on format
+
+tidy() versus stack()
+
+### Distinctiveness
+
+Formula.
+
+### Uniqueness
+
+### Restrictedness
+
+### Scarcity
+
+### Other notes
+
+Global Di computation, Local Ui computation,
+
+Performance sparse matrices.
+
+Other way of computing Ri
+
+## Visualization
+
+Indices distribution
+Indices correlations
+Functional Space
+Maps
+

@@ -17,7 +17,7 @@ This repository contains a worked through example of the use of [`funrar`R packa
 
 The dataset is available through Dryad there: [doi:10.5061/dryad.9t0n8](https://doi.org/10.5061/dryad.9t0n8).
 
-The functional traits metadata are available on the [Ecological Archives Repository](http://esapubs.org/archive/ecol/E090/184/).
+The functional traits metadata are available on the [Ecological Archives Repository](http://esapubs.org/archive/ecol/E090/184/).[@jones_pantheria:_2009]
 
 The repository is self-contained and can be used to automatically download [see How to run section](#how-to-run) and compute the figures shown in the submitted manuscript.
 
