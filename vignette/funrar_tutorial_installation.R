@@ -44,5 +44,5 @@ tempfile("data/lawning_data.zip")
 rdryad::dryad_fetch(
     rdryad::dryad_files(rdryad::handle2doi("10255/dryad.116171"))[1],
     destfile = "data/lawning_data.zip", mode = "wb")
-unzip("data/lawning_data.zip", exdir = "data/")
+unzip("data/lawning_data.zip", exdir = "data")
 unlink("data/lawning_data.zip")
