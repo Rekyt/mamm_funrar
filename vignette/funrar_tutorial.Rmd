@@ -13,29 +13,51 @@ This document aims to guide you through the use of `funrar` to compute functiona
 Before running the analysis be sure to install the different packages and download the needed datasets by running the following chunk:
 
 ```{r, eval = FALSE}
-install.packages(c("funrar", "rdryad", "ggplot2"))
 
+# Install package `devtools` to install development version of `funrar`
+if (!require("devtools")) {
+    install.packages("devtools")
+}
+
+# Install development version of funrar
+devtools::install_github("Rekyt/funrar", build_vignettes = TRUE)
+
+# Install development version of `rdryad` if missing to download the example
+# dataset
+devtools::install_github("ropensci/rdryad")
+
+# Install `ggplot2` if missing
+if (!require("ggplot2")) {
+    install.packages("ggplot2")
+}
+
+# Create a tutorial directory in the current directory
+if (!dir.exists("funrar_tutorial")) {
+    dir.create("funrar_tutorial")
+}
+
+# Move to tutorial directory
+setwd("funrar_tutorial")
+
+if (!dir.exists("data")) {
+    dir.create("data")
+}
+
+# Download the example dataset from Lawning et al. 2016
+# <doi:10.5061/dryad.9t0n8>
+tempfile("data/lawning_data.zip")
+rdryad::dryad_fetch(
+    rdryad::dryad_files(rdryad::handle2doi("10255/dryad.116171"))[1],
+    destfile = "data/lawning_data.zip", mode = "wb")
+unzip("data/lawning_data.zip", exdir = "data/")
+unlink("data/lawning_data.zip")
 ```
 
 ## Load Data
 
-```{r}
-dryad_archive = "lawning_data.zip"
-
-# Create a temporary file
-tempfile(dryad_archive)
-
-# Download file
-dryad_fetch(download_url(handle = dryad_handle), destfile = dryad_archive,
-            mode = "wb")
-
-# Extract archive
-unzip(dryad_archive, exdir = substr(dryad_dir, 1, nchar(dryad_dir) - 1))
-
-# Clean Up Temporary File
-unlink(dryad_archive)
-```
-
+Now that all the necessary packages are installed and the example dataset
+downloaded. We can begin by loading and describing the files in the archive.
+As mentioned in XXXXXX its an atlas dataset from
 
 Trait data, site-species
 
@@ -45,14 +67,19 @@ Scale traits first
 
 Gower's distance, Euclidean distance (continuous triaits, etc.)
 
+**WARNING:** Make sure that column types correspond to trait values before
+computing distances (ordinal traits as `ordered` factor for example).
+
 `compute_dist_matrix()`
 
-`ade4::dist.ktab()`
+-----------
+**NOTE**
 
-
-Need to scale
-
-*NOTE:* 
+`compute_dist_matrix()` is a wrapper around function `daisy()` in package
+`cluster`. So you can use any other distance function as long as you feed a
+`matrix` object to `funrar` function.
+See for example `ade4::dist.ktab()`
+-----------
 
 ## Compute rarity indices
 
