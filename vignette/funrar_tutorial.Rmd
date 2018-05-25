@@ -111,7 +111,7 @@ Before computing the distance matrix we have to make sure that the trait matrix 
 library("funrar")
 
 trait_format = trait_subset
-rownames(trait_format) = trait_format$TaxonName
+rownames(trait_format) = gsub(" ", "_", trait_format$TaxonName)
 trait_format = trait_format[, -1]
 
 trait_distance = compute_dist_matrix(trait_format, metric = "gower")
@@ -152,6 +152,30 @@ D_{i, ab} = \frac{
         }{\sum_{j = 1, j \neq i}^{N} A_j}
 $$
 with $A_j$ the relative abundance of species $j$ the focal community.
+
+In the package the matrix version of the function `distinctiveness()` computes distinctiveness:
+
+```{r compute_distinctiveness}
+# The site-species matrix should be formatted beforehand
+pres_mat = pres_matrix
+rownames(pres_mat) = pres_mat$GlobalID  # Name sites
+pres_mat = pres_mat[, -c(1:3)]          # Take out sites and coordinates
+pres_mat = as.matrix(pres_mat)
+
+mamm_di = distinctiveness(pres_mat, trait_distance)
+
+str(mamm_di)
+```
+Returned object is a `matrix`, with `NA` when species is absent of the community. The warning message tells use that some communities had a single species them, thus they had `NaN`.
+Either you can use the matrix format or transform it to a data frame using the `matrix_to_stack()` function where you indicate the name of the column that will contain the values, one for the row names and one for the column names:
+
+```{r}
+df_di = matrix_to_stack(mamm_di,
+                        value_col  = "di",      # Name of the column with values
+                        row_to_col = "site",    # Name of column with row names
+                        col_to_col = "species") # Name of column with col names
+```
+
 
 ### Uniqueness (Regional Trait Rarity)
 
