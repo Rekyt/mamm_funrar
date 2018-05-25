@@ -62,43 +62,102 @@ downloaded, we can begin by loading and describing the files in the archive.
 @Lawing_Data_2016 mentioned in its an atlas dataset of North American mammals.
 The trait matrix is in the `Traits.csv` file. It contains the trait information for all the mammal from the @Jones_PanTHERIA_2009 database.
 
+```{r}
+trait_matrix = read.csv("data/DryadArchive/Traits.csv")
+
+head(trait_matrix)
+summary(trait_matrix)
+```
+This table contains the traits of species from the @Jones_PanTHERIA_2009 database, with only quantitative traits.
+In order to compute functional rarity we need to choose a subset of traits to keep a high number of species while using enough traits to estimate functional rarity. In order to get similar results to [@Grenie_funrar_2017], we select the following traits: adult body mass, litter size, diest breadth, habitat breadth and terrestriality.
+```{r}
+# Filter observation that are not NA in the selected columns
+trait_subset = subset(trait_matrix, !is.na(trait_matrix$X5_1_AdultBodyMass_g) &
+                          !is.na(trait_matrix$X15_1_LitterSize) &
+                          !is.na(trait_matrix$X6_1_DietBreadth) &
+                          !is.na(trait_matrix$X6_2_TrophicLevel) &
+                          !is.na(trait_matrix$X12_1_HabitatBreadth) &
+                          !is.na(trait_matrix$X12_2_Terrestriality))
+
+# Conserve only the necessary columns
+trait_subset = trait_subset[, colSums(is.na(trait_subset)) == 0]
+
+head(trait_subset)
+```
+
+Then we need to load one `PresAbsMatrixXXX.csv` file, which contains the presence-absence matrix with the different species. To make computation quicker and avoid clogging the RAM, we load the coarser resolution presence-absence matrix `PresAbsMatrix250.csv`.
+
+```{r}
+pres_matrix = read.csv("data/DryadArchive/PresAbsMatrix250.csv")
+
+pres_matrix[1:5, 1:5]
+```
+
+We need then to select only species for which we have traits:
+```{r}
+# Select only the subset species for which we have selected the traits
+pres_subset = pres_matrix[, c("GlobalID", "Longitude", "Latitude"),
+                          gsub(" ", "_", trait_subset$TaxonName)]
+```
 
 
 ## Compute distance matrix
 
-Scale traits first
+Now that we have loaded the data and selected the traits, we can compute the functional distance/dissimilarity matrix that will be used in the computation of functional rarity indices.
 
-Gower's distance, Euclidean distance (continuous triaits, etc.)
+Before computing the distance matrix we have to make sure that the trait matrix is well formatted, with row names corresponding to species names and with only traits needed for distance matrices.
+
+```{r format_traits}
+library("funrar")
+
+trait_format = trait_subset
+rownames(trait_format) = trait_format$TaxonName
+trait_format = trait_format[, -1]
+
+trait_distance = compute_dist_matrix(trait_format, metric = "gower")
+```
+
+The `compute_dist_matrix()` function is a wrapper around the `daisy()` function in package `cluster`. By default it computes Gower's distance [-@Gower_General_1971], but the distance can be changed using the `metric` argument. For example to compute euclidean trait distance, it is possible to use `compute_dist_matrix(metric = "euclidean")`.
+Otherwise any distance/dissimilarity method can used as long as the distance matrix is of `matrix` type with column and row names corresponding to species/individual/genotype names.
+
+When working with mixed traits (continuous, discrete, ordinal, nominal and others), another distance metric that can be considered is the extended Gower distance [@Pavoine_challenge_2009], computable using the `dist.ktab()` function of the `ade4` package.
 
 **WARNING:** Make sure that column types correspond to trait values before
 computing distances (ordinal traits as `ordered` factor for example).
-
-`compute_dist_matrix()`
-
------------
-**NOTE**
-
-`compute_dist_matrix()` is a wrapper around function `daisy()` in package
-`cluster`. So you can use any other distance function as long as you feed a
-`matrix` object to `funrar` function.
-See for example `ade4::dist.ktab()`
------------
 
 ## Compute rarity indices
 
 ### Notes on format
 
-tidy() versus stack()
+In `funrar` all the functions to compute rarity indices are provided in two format depending on the presence-absence matrix.
+The presence-absence data can be provided as a matrix using the "regular" version of functions. The most common format is a presence-absence matrix, such a matrix can be difficult to load using R. It has recently been suggested that the "tidy" format should be used to structure data [@JSSv059i10]. In tidy format, the site-species matrix has three columns: one for species, one for site and one for abundances, each row is an observation of a given species in a given site with a given abundance.
 
-### Distinctiveness
+![Matrix to tidy format. **(left)** Matrix format for site-species table **(right)** tidy format for site-species table]("matrix_to_tidy.png")
 
-Formula.
+All indices functions exist in a regular form that uses the matrix format. All of them exist in a tidy or stack version using a suffix `_stack()` (and `_tidy()`).
 
-### Uniqueness
+### Distinctiveness (Local Trait Rarity)
 
-### Restrictedness
+The `funrar` package computes the indices following [@Violle_Functional_2017]. Thus functional distinctiveness, i.e., the local trait rarity is defined as follow:
+$$
+D_i = \frac{
+        \sum_{j = 1, j \neq i}^{N} d_{ij}
+        }{N-1}
+$$
+with $i$ the focal species, $N$ the total number of species in the given community and $d_{ij}$ the dissimarity/distance coefficient between species $i$ and $j$.
+When using abundances the functional distinctiveness is defied as:
+$$
+D_{i, ab} = \frac{
+        \sum_{j = 1, j \neq i}^{N} d_{ij} \times A_j
+        }{\sum_{j = 1, j \neq i}^{N} A_j}
+$$
+with $A_j$ the relative abundance of species $j$ the focal community.
 
-### Scarcity
+### Uniqueness (Regional Trait Rarity)
+
+### Scarcity (Local Geographical Rarity)
+
+### Restrictedness (Regional Geographical Rarity)
 
 ### Other notes
 
@@ -106,7 +165,7 @@ Global Di computation, Local Ui computation,
 
 Performance sparse matrices.
 
-Other way of computing Ri
+Other ways of computing Ri
 
 ## Visualization
 
