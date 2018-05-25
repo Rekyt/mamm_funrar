@@ -3,6 +3,7 @@ title: "How to compute functional rarity indices using `funrar`"
 author: "Matthias Grenié"
 date: "21 mai 2018"
 output: pdf_document
+bibliography: references.bib
 ---
 
 ```{r setup, include=FALSE}
@@ -10,6 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 This document aims to guide you through the use of `funrar` to compute functional rarity indices.
+The aim is to reproduce the analyses from [@Grenie_funrar_2017] by using the Mammals dataset published on Dryad [@Lawing_Data_2016] from [@Lawing_Community_2017]. We are going to describe the functional rarity of North American mammals from atlas data.
 Before running the analysis be sure to install the different packages and download the needed datasets by running the following chunk:
 
 ```{r, eval = FALSE}
@@ -56,10 +58,11 @@ unlink("data/lawning_data.zip")
 ## Load Data
 
 Now that all the necessary packages are installed and the example dataset
-downloaded. We can begin by loading and describing the files in the archive.
-As mentioned in XXXXXX its an atlas dataset from
+downloaded, we can begin by loading and describing the files in the archive.
+@Lawing_Data_2016 mentioned in its an atlas dataset of North American mammals.
+The trait matrix is in the `Traits.csv` file. It contains the trait information for all the mammal from the @Jones_PanTHERIA_2009 database.
 
-Trait data, site-species
+
 
 ## Compute distance matrix
 
@@ -112,3 +115,4 @@ Indices correlations
 Functional Space
 Maps
 
+## References
