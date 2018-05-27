@@ -182,7 +182,36 @@ head(df_di)
 
 ### Uniqueness (Regional Trait Rarity)
 
+Similarly uniqueness $U_i$ is defined following [@Violle_Functional_2017] definition:
+$$
+    U_i = \min(d_{ij}), \forall j \in [1; N],  j \neq i
+$$
+with $d_{ij}$ the functional distance between species $i$ and $j$ with $j \neq i$, $N$ being the number of species at the global level.
+
+Uniqueness is thus the nearest neighbor distance in the functional distance from the focal species considering all species present in the global functional space.
+You can use `funrar` to compute uniqueness using `uniqueness()` and `uniqueness_stack()` function:
+
+```{r compute_uniqueness}
+mamm_ui = uniqueness(pres_mat, trait_distance)
+
+head(mamm_ui)
+```
+The output object is a data.frame containing species names and uniqueness values in `Ui` column.
+
 ### Scarcity (Local Geographical Rarity)
+
+Scarcity measures the local rarity of a species, in terms of relative abundance, it is defined as:
+
+$$
+    S_i = \exp(-N\times \ln2 \times A_i)
+$$
+where $N$ is the number of species of the local community and $A_i$ the relative abundance of the focal species $i$.
+$S_i$ increases towards one when the focal species has a small relative abundance, and decreases towards zero when the species is dominant in a species rich community.
+When all species have the same relative abundance – i.e., $A_i = 1/N$ –, $S_i = 0.5$.
+
+Our example dataset does not contain abundances but you can compute scarcity using the same functions as before `scarcity()` and `scarcity_stack()`.
+
+**NOTE**: When computing scarcity, it is important to use **relative abundances** as input. Thus before using `scarcity()` on a matrix you should convert it to a relative abundances matrix using `make_relative()`.
 
 ### Restrictedness (Regional Geographical Rarity)
 
@@ -221,10 +250,36 @@ com_ui = apply(subset_mat, 1,
 str(head(com_ui, 2))
 ```
 
- 
 #### Better perforamnces: using sparse matrices
 
 #### Alternative measure of Ri
+
+By default and as it was suggested in [@violle_functional_2017] restrictedness, $R_i$ is computed as follow:
+
+$$
+    R_{i} = 1 - \frac{K_i}{K_{tot}}
+$$
+with $K_i$ the number of sites where species $i$ occur and $K_{tot}$ the total number of sites. As the species occupies less and less sites, $R_i$ tends to one. The problem here is that $R_i$ equals one only for a species that occupies no site in the dataset, which makes no sense.
+Thus we can standardize $R_i$ on the value of restrictedness for species occupying a single site $R_{one}$:
+
+$$
+    R_i^\ast = \frac{R_i}{R_{one}} \\
+    = \frac{1 - \frac{K_i}{K_{tot}}}{1 - \frac{1}{K_{tot}}} \\
+    = \frac{K_{tot} - K_i}{K_{tot} - 1} \\
+$$
+with $R_i^\ast$ the new version of $R_i$. In this case, when a species occupies a single site, $R_i$ equals zero, while it equals one when occupying all the sites.
+
+It is possible to use this way of computing restrictedness using the argument `relative = TRUE` in `restrictedness()` and `restrictedness_stack()` functions.
+
+
+#### All at once
+
+The `funrar()` and `funrar_stack()` functions let you compute all indices at once.
+
+#### Note on parallelism
+
+The `funrar` package does not include functions to be run in parallel. However, the computation of indices can be parallelized by splitting site-species matrix in sub-matrices and computing the indices on those parts, using the same trait distance matrix.
+
 
 ## Visualization
 
