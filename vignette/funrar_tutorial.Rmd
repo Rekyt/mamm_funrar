@@ -2,7 +2,9 @@
 title: "How to compute functional rarity indices using `funrar`"
 author: "Matthias Grenié"
 date: "21 mai 2018"
-output: pdf_document
+output:
+    pdf_document:
+        latex_engine: xelatex
 bibliography: references.bib
 ---
 
@@ -65,8 +67,7 @@ The trait matrix is in the `Traits.csv` file. It contains the trait information 
 ```{r}
 trait_matrix = read.csv("data/DryadArchive/Traits.csv")
 
-head(trait_matrix)
-summary(trait_matrix)
+head(trait_matrix, 2)
 ```
 This table contains the traits of species from the @Jones_PanTHERIA_2009 database, with only quantitative traits.
 In order to compute functional rarity we need to choose a subset of traits to keep a high number of species while using enough traits to estimate functional rarity. In order to get similar results to [@Grenie_funrar_2017], we select the following traits: adult body mass, litter size, diest breadth, habitat breadth and terrestriality.
@@ -131,8 +132,6 @@ computing distances (ordinal traits as `ordered` factor for example). Also, if y
 
 In `funrar` all the functions to compute rarity indices are provided in two format depending on the presence-absence matrix.
 The presence-absence data can be provided as a matrix using the "regular" version of functions. The most common format is a presence-absence matrix, such a matrix can be difficult to load using R. It has recently been suggested that the "tidy" format should be used to structure data [@JSSv059i10]. In tidy format, the site-species matrix has three columns: one for species, one for site and one for abundances, each row is an observation of a given species in a given site with a given abundance.
-
-![Matrix to tidy format. **(left)** Matrix format for site-species table **(right)** tidy format for site-species table]("matrix_to_tidy.png")
 
 All indices functions exist in a regular form that uses the matrix format. All of them exist in a tidy or stack version using a suffix `_stack()` (and `_tidy()`).
 
@@ -262,7 +261,7 @@ com_ui = apply(subset_mat, 1,
                    present_sp = t(present_sp)
                    
                    # Compute local uniqueness
-                   uniqueness(present_sp, dist_m)})
+                   suppressMessages(uniqueness(present_sp, dist_m))})
 str(head(com_ui, 2))
 ```
 
