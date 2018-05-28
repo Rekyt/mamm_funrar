@@ -123,7 +123,7 @@ Otherwise any distance/dissimilarity method can used as long as the distance mat
 When working with mixed traits (continuous, discrete, ordinal, nominal and others), another distance metric that can be considered is the extended Gower distance [@Pavoine_challenge_2009], computable using the `dist.ktab()` function of the `ade4` package.
 
 **WARNING:** Make sure that column types correspond to trait values before
-computing distances (ordinal traits as `ordered` factor for example).
+computing distances (ordinal traits as `ordered` factor for example). Also, if you are using a distance metric that is not scaled between 0 and 1, the indices won't be scaled between 0 and 1, so if you use the euclidean distance, be sure to scale between 0 and 1 before using it in functional rarity metrics.
 
 ## Compute rarity indices
 
@@ -240,12 +240,12 @@ Sometimes it can be interesting to compute distinctiveness at the global level. 
 ```{r global_di}
 # Take the first line of presence matrix, note the argument `drop = FALSE` to
 # keep matrix structure
-global_com = pres_mat[1,, drop = FALSE]
+global_com = data.frame(species = colnames(pres_mat),
+                        site    = "global")
 
-global_com[] = 1  # Make all species present
-rownames(global_com) = "global"
-
-global_di = distinctiveness(global_com, trait_distance)
+global_di = distinctiveness_stack(global_com, "species", "site",
+                                  dist_matrix = trait_distance)
+head(global_di)
 ```
 
 Similarly you may want to compute uniqueness at the site-level. In this case the code is a little trickier, as each site should be considered a pool. Also you have to choose if you consider the functional space of each local community or a global one. Here is an example while keeping the same global functional space:
@@ -302,19 +302,119 @@ str(all_indices, max.level = 1)
 
 The `funrar` package does not include functions to be run in parallel. However, the computation of indices can be parallelized by splitting site-species matrix in sub-matrices and computing the indices on those parts, using the same trait distance matrix.
 
-
 ## Visualization
 
 ### Indices distribution
 
+```{r}
+library("ggplot2")
+
+dist_di = ggplot(df_di, aes(di)) +
+    geom_histogram() +
+    labs(x = "Funct. Distinctiveness", y = "Count",
+         subtitle = "Distribution of species-site Distinctiveness") +
+    theme_bw()
+
+dist_di
+```
+
+```{r restrictedness_distribution}
+dist_ri = ggplot(df_ri, aes(Ri)) +
+    geom_histogram() +
+    labs(x = "Restrictedness", y = "Count") +
+    theme_bw()
+
+dist_ri
+```
+
+```{r ui_dist}
+dist_ui = ggplot(mamm_ui, aes(x = Ui)) +
+    geom_histogram() +
+    labs(x = "Uniqueness", y = "Count") +
+    theme_bw()
+
+dist_ui
+```
+
 
 ### Indices correlations
+
+```{r}
+mamm_indices = merge(df_ri, global_di[, c(1, 3)], by = "species")
+mamm_indices = merge(mamm_indices, mamm_ui, by = "species")
+
+head(mamm_indices)
+```
+
+```{r di_ui}
+di_ui = ggplot(mamm_indices, aes(Di, Ui)) +
+    geom_point(alpha = 0.7) +
+    labs(x = "Funct. Distinctiveness",
+         y = "Funct. Uniqueness") +
+    theme_bw()
+
+di_ui
+```
+
+```{r ui_ri}
+ui_ri = ggplot(mamm_indices, aes(Ui, Ri)) +
+    geom_point(alpha = 0.7) +
+    labs(x = "Funct. Uniqueness",
+         y = "Restrictedness") +
+    theme_bw()
+
+ui_ri
+```
+
+```{r di_ri}
+di_ri = ggplot(mamm_indices, aes(Di, Ri)) +
+    geom_point(alpha = 0.7) +
+    labs(x = "Global Funct. Distinctiveness",
+         y = "Restrictedness") +
+    theme_bw()
+
+di_ri
+```
 
 
 ### Functional Space
 
+The aim here is to use dimension reduction technique (such as Principal Component Analysis   or Principal Coordinates analysis) and reduce the functional space to a few key axes. Then to map on the projected points the values of our indices to see how they are associated to certain traits.
+
+```{r}
+
+```
+
 
 ### Maps
+
+We can for example draw a map of site average functional distinctiveness:
+
+```{r}
+# Compute average distinctiveness per site
+site_di = with(df_di, aggregate(di, list(site), mean))
+names(site_di) = c("site", "Di_avg")
+
+# Add site coordinates
+site_di = merge(site_di, pres_matrix[, c(1:3)], by.x = "site", by.y = "GlobalID")
+
+# Draw map
+map_di = ggplot(site_di, aes(x = Longitude, y = Latitude, z = Di_avg)) +
+    stat_summary_2d(bins = 50, color = NA) +
+    borders(xlim = c(-170, -23), ylim = c(9.5,83), size = 0.01,
+            colour = "gray65") +
+    coord_map("albers", at0 = 40, lat1 = 20,
+              xlim = range(site_di$Longitude),
+              ylim = range(site_di$Latitude)) +
+    scale_fill_distiller(palette = "YlOrRd", direction = 1,
+                         limits = c(0, 1)) +
+    theme_minimal() +
+    theme(legend.position = c(0.1, 0.2)) +
+    borders(xlim = c(-170, -23), ylim = c(9.5,83), size = 0.1,
+            colour = "gray65")
+
+map_di
+```
 
 
 
