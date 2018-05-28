@@ -213,7 +213,23 @@ Our example dataset does not contain abundances but you can compute scarcity usi
 
 **NOTE**: When computing scarcity, it is important to use **relative abundances** as input. Thus before using `scarcity()` on a matrix you should convert it to a relative abundances matrix using `make_relative()`.
 
+
 ### Restrictedness (Regional Geographical Rarity)
+
+Restrictedness aims to measure the regional range of a species, for the moment it is defined as follow:
+$$
+    R_i = 1 - \frac{K_i}{K_{tot}}
+$$
+with $R_i$ the restrictedness of species $i$, $K_i$ the number of sites where species $i$ occur and $K_{tot}$ the total number of sites.
+
+You can compute restrictedness providing only the site-species matrix to `restrictedness()` and `restrictedness_stack()` functions:
+```{r compute_restrictedness}
+df_ri = restrictedness(pres_mat)
+
+head(df_ri)
+```
+The output is a data.frame with a single value of restrictedness per species in the `Ri` column.
+See alternative options in the notes section below.
 
 ### Notes on computing rarity indices
 
@@ -274,7 +290,13 @@ It is possible to use this way of computing restrictedness using the argument `r
 
 #### All at once
 
-The `funrar()` and `funrar_stack()` functions let you compute all indices at once.
+The `funrar()` and `funrar_stack()` functions let you compute all indices at once. It outputs a list with all the indices indexed (`Ui` = uniqueness, `Di` = distinctiveness, `Ri` = restrictedness).
+```{r full_funrar}
+all_indices = funrar(pres_mat, trait_distance)
+
+str(all_indices, max.level = 1)
+```
+
 
 #### Note on parallelism
 
@@ -283,9 +305,17 @@ The `funrar` package does not include functions to be run in parallel. However, 
 
 ## Visualization
 
-Indices distribution
-Indices correlations
-Functional Space
-Maps
+### Indices distribution
+
+
+### Indices correlations
+
+
+### Functional Space
+
+
+### Maps
+
+
 
 ## References
